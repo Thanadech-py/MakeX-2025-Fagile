@@ -4,10 +4,11 @@
 We are the Fagile team participating in MakeX 2025, a robotics competition that challenges teams to design, build, and program robots to complete specific tasks. Our team is composed of passionate students dedicated to robotics and engineering.
 
 ### Team Members
-- **Team Leader**: [Your Name]
-- **Programmer**: [Programmer's Name]
-- **Mechanical Engineer**: [Mechanical Engineer's Name]
-- **Designer**: [Designer's Name]
+- **Team Mentor**: [Yosawee Longthong]
+- **Programmer**: [Thahandech Lapassirikul]
+- **Mechanical Engineer**: [Tanapat Pinnok]
+- **Electrical Engineer**: [Narinchai]
+- **Designer**: [Natdanai Duangraksa]
 - **Strategy Coordinator**: [Strategy Coordinator's Name]
 
 ## Project Overview
@@ -45,7 +46,6 @@ Our robot is designed for the MakeX 2025 competition, featuring advanced mecanum
 MakeX-2025-Fagile/
 ├── main.py              # Main robot control program
 ├── README.md            # Project documentation
-└── [Other files...]     # Additional project files
 ```
 
 ## Getting Started
