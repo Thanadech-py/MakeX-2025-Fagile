@@ -5,10 +5,10 @@ import math
 from mbuild.encoder_motor import encoder_motor_class
 from mbuild import power_expand_board
 from mbuild import gamepad
-from mbuild.led_matrix import led_matrix_class
-from mbuild.smart_camera import smart_camera_class
-from mbuild.ranging_sensor import ranging_sensor_class
-from mbuild.smartservo import smartservo_class
+# from mbuild.led_matrix import led_matrix_class
+# from mbuild.smart_camera import smart_camera_class
+# from mbuild.ranging_sensor import ranging_sensor_class
+# from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
 import time
 
@@ -25,6 +25,7 @@ BL_POWER = 100
 
 class PID:
     def __init__(self, Kp, Ki, Kd, setpoint=0, max_integral=1000, max_output=255):
+        # Basic PID parameters
         self.Kp = Kp  # Proportional gain
         self.Ki = Ki  # Integral gain
         self.Kd = Kd  # Derivative gain
@@ -33,8 +34,20 @@ class PID:
         self.previous_error = 0  # Previous error (used for derivative)
         self.max_integral = max_integral  # Maximum integral value to prevent windup
         self.max_output = max_output  # Maximum output value
+        
+        # Time-based control
         self.previous_time = time.time()  # For delta time calculation
         self.ff_gain = 0.1  # Feedforward gain
+        
+        # Advanced features
+        self.error_history = []  # Store recent errors for analysis
+        self.max_history = 10  # Maximum number of errors to store
+        self.adaptive_gains = {  # Adaptive gains that can change based on performance
+            "Kp": Kp,
+            "Ki": Ki,
+            "Kd": Kd
+        }
+        self.learning_rate = 0.001  # Rate at which gains adapt
 
     def update(self, current_value):
         # Calculate delta time
@@ -42,23 +55,38 @@ class PID:
         dt = current_time - self.previous_time
         self.previous_time = current_time
 
-        # Calculate the error (setpoint - current value)
+        # Calculate the error
         error = self.setpoint - current_value
         
-        # Proportional term
-        P = self.Kp * error
+        # Update error history for adaptive control
+        self.error_history.append(error)
+        if len(self.error_history) > self.max_history:
+            self.error_history.pop(0)
+        
+        # Calculate error statistics for adaptive gains
+        error_mean = sum(self.error_history) / len(self.error_history)
+        error_variance = sum((e - error_mean) ** 2 for e in self.error_history) / len(self.error_history)
+        
+        # Adjust gains based on error statistics
+        if error_variance > 100:  # High oscillation
+            self.adaptive_gains["Kp"] *= 0.95
+            self.adaptive_gains["Ki"] *= 0.95
+        elif error_variance < 10:  # Low oscillation
+            self.adaptive_gains["Kp"] *= 1.05
+            self.adaptive_gains["Ki"] *= 1.05
+        
+        # Calculate PID terms with adaptive gains
+        P = self.adaptive_gains["Kp"] * error
         
         # Integral term with anti-windup
         self.integral += error * dt
-        # Clamp integral to prevent windup
         self.integral = max(min(self.integral, self.max_integral), -self.max_integral)
-        I = self.Ki * self.integral
+        I = self.adaptive_gains["Ki"] * self.integral
 
         # Derivative term with error clamping
         error_change = error - self.previous_error
-        # Clamp error change to prevent spikes
         error_change = max(min(error_change, 100), -100)
-        D = self.Kd * (error_change / dt) if dt > 0 else 0
+        D = self.adaptive_gains["Kd"] * (error_change / dt) if dt > 0 else 0
 
         # Feedforward term
         FF = self.ff_gain * self.setpoint
@@ -79,6 +107,19 @@ class PID:
         self.integral = 0  # Reset the integral to avoid wind-up
         self.previous_error = 0  # Reset previous error to avoid a large derivative spike
         self.previous_time = time.time()  # Reset time for delta time calculation
+        self.error_history = []  # Clear error history for fresh start
+
+    def reset(self):
+        """Reset all PID parameters to initial state"""
+        self.integral = 0
+        self.previous_error = 0
+        self.previous_time = time.time()
+        self.error_history = []
+        self.adaptive_gains = {
+            "Kp": self.Kp,
+            "Ki": self.Ki,
+            "Kd": self.Kd
+        }
 
 
 class motors:
@@ -112,8 +153,52 @@ class util:
         # Scale joystick value (-100 to 100) to motor speed (-max_speed to max_speed)
         return (value / 100.0) * max_speed
 
-class holonomic:    
+class MotionProfile:
+    def __init__(self, max_velocity, max_acceleration, max_jerk):
+        self.max_velocity = max_velocity
+        self.max_acceleration = max_acceleration
+        self.max_jerk = max_jerk
+        self.current_position = 0
+        self.current_velocity = 0
+        self.current_acceleration = 0
+        self.target_position = 0
+        self.last_time = time.time()
 
+    def update(self, target_position):
+        current_time = time.time()
+        dt = current_time - self.last_time
+        self.last_time = current_time
+
+        # Calculate position error
+        position_error = target_position - self.current_position
+
+        # Calculate desired velocity using trapezoidal profile
+        if abs(position_error) < 0.1:  # Close enough to target
+            desired_velocity = 0
+        else:
+            # Calculate maximum possible velocity at current position
+            max_possible_velocity = math.sqrt(2 * self.max_acceleration * abs(position_error))
+            desired_velocity = math.copysign(min(abs(position_error) / dt, max_possible_velocity, self.max_velocity), position_error)
+
+        # Calculate velocity error
+        velocity_error = desired_velocity - self.current_velocity
+
+        # Update acceleration with jerk limit
+        desired_acceleration = velocity_error / dt
+        acceleration_change = desired_acceleration - self.current_acceleration
+        acceleration_change = max(min(acceleration_change, self.max_jerk * dt), -self.max_jerk * dt)
+        self.current_acceleration += acceleration_change
+
+        # Update velocity with acceleration limit
+        self.current_velocity += self.current_acceleration * dt
+        self.current_velocity = max(min(self.current_velocity, self.max_velocity), -self.max_velocity)
+
+        # Update position
+        self.current_position += self.current_velocity * dt
+
+        return self.current_position, self.current_velocity, self.current_acceleration
+
+class holonomic:    
     pids = {
         "lf": PID(Kp=1.2, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
         "lb": PID(Kp=1.2, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
@@ -121,16 +206,101 @@ class holonomic:
         "rb": PID(Kp=1.1, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
     }
 
-    # motor tune
+    # Motor tuning for different movement types
     tune = {
-        "fl": 1.5,
-        "fr": 1.5,
-        "bl": 1.5,
-        "br": 1.5,
+        "slide": {
+            "fl": 1.5,  # front left wheel during sliding
+            "fr": 1.5,  # front right wheel during sliding
+            "bl": 1.5,  # back left wheel during sliding
+            "br": 1.5   # back right wheel during sliding
+        },
+        "forward": {
+            "fl": 1.0,  # front left wheel during forward movement
+            "fr": 1.0,  # front right wheel during forward movement
+            "bl": 1.0,  # back left wheel during forward movement
+            "br": 1.0   # back right wheel during forward movement
+        },
+        "turn": {
+            "fl": 1.0,  # front left wheel during turning
+            "fr": 1.0,  # front right wheel during turning
+            "bl": 1.0,  # back left wheel during turning
+            "br": 1.0   # back right wheel during turning
+        }
     }
+
+    # Auto-tuning parameters
+    auto_tune = {
+        "enabled": False,
+        "last_error": {
+            "slide": {"fl": 0, "fr": 0, "bl": 0, "br": 0},
+            "forward": {"fl": 0, "fr": 0, "bl": 0, "br": 0},
+            "turn": {"fl": 0, "fr": 0, "bl": 0, "br": 0}
+        },
+        "tune_step": 0.05,  # How much to adjust tuning values each step
+        "min_tune": 0.5,    # Minimum tuning value
+        "max_tune": 2.0     # Maximum tuning value
+    }
+
+    # Motion profiles for each movement type
+    motion_profiles = {
+        "slide": MotionProfile(max_velocity=100, max_acceleration=50, max_jerk=20),
+        "forward": MotionProfile(max_velocity=100, max_acceleration=50, max_jerk=20),
+        "turn": MotionProfile(max_velocity=100, max_acceleration=50, max_jerk=20)
+    }
+
+    def auto_tune_wheels(movement_type, target_speed, actual_speeds):
+        if not holonomic.auto_tune["enabled"]:
+            return
+            
+        # Calculate errors for each wheel
+        errors = {
+            "fl": target_speed - actual_speeds["fl"],
+            "fr": target_speed - actual_speeds["fr"],
+            "bl": target_speed - actual_speeds["bl"],
+            "br": target_speed - actual_speeds["br"]
+        }
+        
+        # Update tuning values based on errors
+        for wheel in ["fl", "fr", "bl", "br"]:
+            error = errors[wheel]
+            last_error = holonomic.auto_tune["last_error"][movement_type][wheel]
+            
+            # If error is getting worse, adjust tuning in opposite direction
+            if abs(error) > abs(last_error):
+                if error > 0:
+                    holonomic.tune[movement_type][wheel] -= holonomic.auto_tune["tune_step"]
+                else:
+                    holonomic.tune[movement_type][wheel] += holonomic.auto_tune["tune_step"]
+            # If error is getting better, keep adjusting in same direction
+            else:
+                if error > 0:
+                    holonomic.tune[movement_type][wheel] += holonomic.auto_tune["tune_step"]
+                else:
+                    holonomic.tune[movement_type][wheel] -= holonomic.auto_tune["tune_step"]
+            
+            # Clamp tuning values
+            holonomic.tune[movement_type][wheel] = max(
+                min(holonomic.tune[movement_type][wheel], holonomic.auto_tune["max_tune"]),
+                holonomic.auto_tune["min_tune"]
+            )
+            
+            # Update last error
+            holonomic.auto_tune["last_error"][movement_type][wheel] = error
 
     def drive(vx, vy, wL, deadzone=25, pid=False):
         global SPEED_MULTIPLIER, PID_SPEED_MULTIPLIER
+        
+        # Apply motion profiling
+        if math.fabs(vx) > math.fabs(vy) and vx > 0:
+            # Sliding movement
+            vx, _, _ = holonomic.motion_profiles["slide"].update(vx)
+        elif math.fabs(vy) > math.fabs(vx) and vy > 0:
+            # Forward/backward movement
+            vy, _, _ = holonomic.motion_profiles["forward"].update(vy)
+        elif math.fabs(wL) > math.fabs(vx) and math.fabs(wL) > math.fabs(vy):
+            # Turning movement
+            wL, _, _ = holonomic.motion_profiles["turn"].update(wL)
+
         if math.fabs(vx) < math.fabs(deadzone):
             vx = 0
         if math.fabs(vy) < math.fabs(deadzone):
@@ -141,18 +311,65 @@ class holonomic:
         # Ensure the correct speed multiplier
         multiplier = PID_SPEED_MULTIPLIER if pid else SPEED_MULTIPLIER
             
-        # Calculation for the wheel speed
+        # Calculation for the wheel speed with improved kinematics
         vFL = (vx + (vy * 1.2) + wL) * multiplier
         vFR = (-(vx) + (vy * 1.2) - wL) * multiplier
         vBL = (-(vx) + (vy * 1.2) + wL) * multiplier
         vBR = (vx + (vy * 1.2) - wL) * multiplier
         
-        # Sliding check to not interfere with the normal movement, incase of tuning specific power
+        # Store target speeds for auto-tuning
+        target_speeds = {"fl": vFL, "fr": vFR, "bl": vBL, "br": vBR}
+        
+        # Apply tuning based on movement type
         if math.fabs(vx) > math.fabs(vy) and vx > 0:
-            vFL *= holonomic.tune["fl"] # หน้าซ้าย
-            vFL *= holonomic.tune["fr"] # หน้าขวา
-            vBL *= holonomic.tune["bl"] # หลังซ้าย
-            vBR *= holonomic.tune["br"] # หลังขวา
+            # Sliding movement
+            vFL *= holonomic.tune["slide"]["fl"]
+            vFR *= holonomic.tune["slide"]["fr"]
+            vBL *= holonomic.tune["slide"]["bl"]
+            vBR *= holonomic.tune["slide"]["br"]
+            
+            # Auto-tune for sliding
+            if pid:
+                actual_speeds = {
+                    "fl": -left_forward_wheel.get_value("speed"),
+                    "fr": right_forward_wheel.get_value("speed"),
+                    "bl": -left_back_wheel.get_value("speed"),
+                    "br": right_back_wheel.get_value("speed")
+                }
+                holonomic.auto_tune_wheels("slide", vx, actual_speeds)
+        elif math.fabs(vy) > math.fabs(vx) and vy > 0:
+            # Forward/backward movement
+            vFL *= holonomic.tune["forward"]["fl"]
+            vFR *= holonomic.tune["forward"]["fr"]
+            vBL *= holonomic.tune["forward"]["bl"]
+            vBR *= holonomic.tune["forward"]["br"]
+            
+            # Auto-tune for forward/backward
+            if pid:
+                actual_speeds = {
+                    "fl": -left_forward_wheel.get_value("speed"),
+                    "fr": right_forward_wheel.get_value("speed"),
+                    "bl": -left_back_wheel.get_value("speed"),
+                    "br": right_back_wheel.get_value("speed")
+                }
+                holonomic.auto_tune_wheels("forward", vy, actual_speeds)
+        elif math.fabs(wL) > math.fabs(vx) and math.fabs(wL) > math.fabs(vy):
+            # Turning movement
+            vFL *= holonomic.tune["turn"]["fl"]
+            vFR *= holonomic.tune["turn"]["fr"]
+            vBL *= holonomic.tune["turn"]["bl"]
+            vBR *= holonomic.tune["turn"]["br"]
+            
+            # Auto-tune for turning
+            if pid:
+                actual_speeds = {
+                    "fl": -left_forward_wheel.get_value("speed"),
+                    "fr": right_forward_wheel.get_value("speed"),
+                    "bl": -left_back_wheel.get_value("speed"),
+                    "br": right_back_wheel.get_value("speed")
+                }
+                holonomic.auto_tune_wheels("turn", wL, actual_speeds)
+        
         if pid:            
             # Left Forward
             holonomic.pids["lf"].set_setpoint(vFL)
@@ -198,34 +415,35 @@ class Auto:
         pass
     
     def left():
-        entrance_feed.set_reverse(True)
-        entrance_feed.on(100)
-        feeder.set_reverse(False)
-        feeder.on(25)
-        front_input.set_reverse(True)
-        front_input.on(60)
-        holonomic.move_forward(50) #move forward 
-        time.sleep(2.51)
-        motors.stop()
-        holonomic.turn_left(60) #turn around
-        time.sleep(1.93)
-        motors.stop()
-        holonomic.slide_left(45) #slide for discs
-        time.sleep(2)
-        motors.stop()
-        holonomic.move_forward(25) #move to take discs
-        time.sleep(3.6)
-        motors.stop()
-        holonomic.slide_left(45)
-        time.sleep(1.2)
-        motors.stop()
-        holonomic.turn_right(60)
-        time.sleep(1.92)
-        motors.stop()
-        holonomic.move_forward(25)
-        time.sleep(2)
-        motors.stop()
-        time.sleep(500000)
+        # Vertical_intake.set_reverse(True)
+        # Vertical_intake.on(100)
+        # Shooter_feed.set_reverse(False)
+        # Shooter_feed.on(25)
+        # Front_intake.set_reverse(True)
+        # Front_intake.on(60)
+        # holonomic.move_forward(50) #move forward 
+        # time.sleep(2.51)
+        # motors.stop()
+        # holonomic.turn_left(60) #turn around
+        # time.sleep(1.93)
+        # motors.stop()
+        # holonomic.slide_left(45) #slide for discs
+        # time.sleep(2)
+        # motors.stop()
+        # holonomic.move_forward(25) #move to take discs
+        # time.sleep(3.6)
+        # motors.stop()
+        # holonomic.slide_left(45)
+        # time.sleep(1.2)
+        # motors.stop()
+        # holonomic.turn_right(60)
+        # time.sleep(1.92)
+        # motors.stop()
+        # holonomic.move_forward(25)
+        # time.sleep(2)
+        # motors.stop()
+        # time.sleep(500000)
+        pass
 
 class dc_motor:
     # Default DC port
@@ -329,10 +547,9 @@ class runtime:
             motors.drive(0, 0, 0, 0)
     def change_mode():
         if novapi.timer() > 0.9:
-            entrance_feed.off()
-            feeder.off()
-            conveyer.off()
-            front_input.off()
+            Vertical_intake.off()
+            Shooter_feed.off()
+            Front_intake.off()
             if runtime.CTRL_MODE == 0:
                 runtime.CTRL_MODE = 1
             else:
@@ -343,46 +560,47 @@ class shoot_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
         if gamepad.is_key_pressed("N2"):
-            entrance_feed.set_reverse(True)
-            entrance_feed.on(100)
-            feeder.set_reverse(False)
-            feeder.on(100)
-            conveyer.set_reverse(True)
-            conveyer.on(100)
-            front_input.set_reverse(True)
-            front_input.on(100)
+            Vertical_intake.set_reverse(False)
+            Vertical_intake.on(100)
+            Shooter_feed.set_reverse(True)
+            Shooter_feed.on(100)
+            Front_intake.set_reverse(True)
+            Front_intake.on(100)  
         elif gamepad.is_key_pressed("N3"):
-            entrance_feed.set_reverse(False)
-            entrance_feed.on(100)
-            feeder.set_reverse(True)
-            feeder.on(100)
-            conveyer.set_reverse(False)
-            conveyer.on(100)
-            front_input.set_reverse(False)
-            front_input.on(100)
+            Vertical_intake.set_reverse(False)
+            Vertical_intake.on(100)
+            Shooter_feed.set_reverse(True)
+            Shooter_feed.on(100)
+            Front_intake.set_reverse(True)
+            Front_intake.on(100)
         else:
-            entrance_feed.off()
-            feeder.off()
-            conveyer.off()
-            front_input.off()
+            Vertical_intake.off()
+            Shooter_feed.off()
+            Front_intake.off()
+
         if gamepad.is_key_pressed("R1"):
-            bl_1.on()
-            bl_2.on()
+            # bl_1.on()
+            # bl_2.on()
+            pass
         else:
-            bl_1.off()
-            bl_2.off()
+            # bl_1.off()
+            # bl_2.off()
+            pass
         if gamepad.is_key_pressed("≡"):
-            laser.set_reverse(True)
-            laser.on(100)
+            # laser.set_reverse(True)
+            # laser.on(100)
         elif gamepad.is_key_pressed("+"):
-            laser.off()
+            # laser.off()
+            pass
         else:
             pass
         #shooter_angle control
         if gamepad.is_key_pressed("Up"):
-            shooter.move(8, 10)
+            # shooter.move(8, 10)
+            pass
         elif gamepad.is_key_pressed("Down"):
-            shooter.move(-8, 10)
+            # shooter.move(-8, 10)
+            pass
         else:
             pass
  
@@ -390,38 +608,44 @@ class gripper_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
         if gamepad.is_key_pressed("Up"):
-            lift.set_power(-90)
+            # lift.set_power(-90)
+            pass
         elif gamepad.is_key_pressed("Down"):
-            lift.set_power(90)
+            # lift.set_power(90)
+            pass
         else:
-            lift.set_speed(0)
+            # lift.set_speed(0)
         if gamepad.is_key_pressed("N1"):
-            gripper1.set_reverse(True)
-            gripper1.on(100)
+            # gripper1.set_reverse(True)
+            # gripper1.on(100)
+            pass
 
         elif gamepad.is_key_pressed("N4"):
-            gripper1.set_reverse(False)
-            gripper1.on(100)
+            # gripper1.set_reverse(False)
+            # gripper1.on(100)
+            pass
         else:
-            gripper1.off()
+            # gripper1.off()
+            pass
         
 
 # Instantiate DC motors
-lift = encoder_motor_class("M4", "INDEX1") # using encoder for spacific position of lift functions
-cooling = dc_motor("DC2")
-gripper1 = dc_motor("DC1")
-conveyer = dc_motor("DC5")
-entrance_feed = dc_motor("DC6")
-feeder = dc_motor("DC7")
-bl_1 = brushless_motor("BL1")
-bl_2 = brushless_motor("BL2")
-shooter = smartservo_class("M1", "INDEX1") # only for angles
-laser = dc_motor("DC8")
-front_input = dc_motor("DC3")
+# lift = encoder_motor_class("M4", "INDEX1") # using encoder for spacific position of lift functions
+# cooling = dc_motor("DC2")
+# gripper1 = dc_motor("DC1")
+# Conveyor = dc_motor("DC5")
+Shooter_feed = dc_motor("DC3")
+Vertical_intake = dc_motor("DC2")
+Front_intake = dc_motor("DC1")
+# bl_1 = brushless_motor("BL1")
+# bl_2 = brushless_motor("BL2")
+# shooter = smartservo_class("M1", "INDEX1") # only for angles
+# laser = dc_motor("DC8")
+
 
 while True:
-    cooling.set_reverse(True)
-    cooling.on(100)
+    # cooling.set_reverse(True)
+    # cooling.on(100)
     if power_manage_module.is_auto_mode():
         pass
     else:
