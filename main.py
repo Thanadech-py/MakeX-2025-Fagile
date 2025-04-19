@@ -8,7 +8,7 @@ from mbuild import gamepad
 # from mbuild.led_matrix import led_matrix_class
 # from mbuild.smart_camera import smart_camera_class
 # from mbuild.ranging_sensor import ranging_sensor_class
-# from mbuild.smartservo import smartservo_class
+from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
 import time
 
@@ -17,7 +17,7 @@ right_forward_wheel = encoder_motor_class("M3", "INDEX1")
 left_back_wheel = encoder_motor_class("M5", "INDEX1")
 right_back_wheel = encoder_motor_class("M6", "INDEX1")
 
-MAX_SPEED = 255
+MAX_SPEED = 350
 SPEED_MULTIPLIER = 2.1
 PID_SPEED_MULTIPLIER = 2.1
 BL_POWER = 100
@@ -25,7 +25,6 @@ BL_POWER = 100
 
 class PID:
     def __init__(self, Kp, Ki, Kd, setpoint=0, max_integral=1000, max_output=255):
-        # Basic PID parameters
         self.Kp = Kp  # Proportional gain
         self.Ki = Ki  # Integral gain
         self.Kd = Kd  # Derivative gain
@@ -34,20 +33,8 @@ class PID:
         self.previous_error = 0  # Previous error (used for derivative)
         self.max_integral = max_integral  # Maximum integral value to prevent windup
         self.max_output = max_output  # Maximum output value
-        
-        # Time-based control
         self.previous_time = time.time()  # For delta time calculation
         self.ff_gain = 0.1  # Feedforward gain
-        
-        # Advanced features
-        self.error_history = []  # Store recent errors for analysis
-        self.max_history = 10  # Maximum number of errors to store
-        self.adaptive_gains = {  # Adaptive gains that can change based on performance
-            "Kp": Kp,
-            "Ki": Ki,
-            "Kd": Kd
-        }
-        self.learning_rate = 0.001  # Rate at which gains adapt
 
     def update(self, current_value):
         # Calculate delta time
@@ -55,38 +42,23 @@ class PID:
         dt = current_time - self.previous_time
         self.previous_time = current_time
 
-        # Calculate the error
+        # Calculate the error (setpoint - current value)
         error = self.setpoint - current_value
         
-        # Update error history for adaptive control
-        self.error_history.append(error)
-        if len(self.error_history) > self.max_history:
-            self.error_history.pop(0)
-        
-        # Calculate error statistics for adaptive gains
-        error_mean = sum(self.error_history) / len(self.error_history)
-        error_variance = sum((e - error_mean) ** 2 for e in self.error_history) / len(self.error_history)
-        
-        # Adjust gains based on error statistics
-        if error_variance > 100:  # High oscillation
-            self.adaptive_gains["Kp"] *= 0.95
-            self.adaptive_gains["Ki"] *= 0.95
-        elif error_variance < 10:  # Low oscillation
-            self.adaptive_gains["Kp"] *= 1.05
-            self.adaptive_gains["Ki"] *= 1.05
-        
-        # Calculate PID terms with adaptive gains
-        P = self.adaptive_gains["Kp"] * error
+        # Proportional term
+        P = self.Kp * error
         
         # Integral term with anti-windup
         self.integral += error * dt
+        # Clamp integral to prevent windup
         self.integral = max(min(self.integral, self.max_integral), -self.max_integral)
-        I = self.adaptive_gains["Ki"] * self.integral
+        I = self.Ki * self.integral
 
         # Derivative term with error clamping
         error_change = error - self.previous_error
+        # Clamp error change to prevent spikes
         error_change = max(min(error_change, 100), -100)
-        D = self.adaptive_gains["Kd"] * (error_change / dt) if dt > 0 else 0
+        D = self.Kd * (error_change / dt) if dt > 0 else 0
 
         # Feedforward term
         FF = self.ff_gain * self.setpoint
@@ -107,19 +79,6 @@ class PID:
         self.integral = 0  # Reset the integral to avoid wind-up
         self.previous_error = 0  # Reset previous error to avoid a large derivative spike
         self.previous_time = time.time()  # Reset time for delta time calculation
-        self.error_history = []  # Clear error history for fresh start
-
-    def reset(self):
-        """Reset all PID parameters to initial state"""
-        self.integral = 0
-        self.previous_error = 0
-        self.previous_time = time.time()
-        self.error_history = []
-        self.adaptive_gains = {
-            "Kp": self.Kp,
-            "Ki": self.Ki,
-            "Kd": self.Kd
-        }
 
 
 class motors:
@@ -198,12 +157,56 @@ class MotionProfile:
 
         return self.current_position, self.current_velocity, self.current_acceleration
 
+class AdvancedPID(PID):
+    def __init__(self, Kp, Ki, Kd, setpoint=0, max_integral=1000, max_output=255):
+        super().__init__(Kp, Ki, Kd, setpoint, max_integral, max_output)
+        self.error_history = []
+        self.max_history = 10
+        self.adaptive_gains = {
+            "Kp": Kp,
+            "Ki": Ki,
+            "Kd": Kd
+        }
+        self.learning_rate = 0.001
+
+    def update(self, current_value):
+        # Calculate error
+        error = self.setpoint - current_value
+        
+        # Update error history
+        self.error_history.append(error)
+        if len(self.error_history) > self.max_history:
+            self.error_history.pop(0)
+        
+        # Calculate error statistics
+        error_mean = sum(self.error_history) / len(self.error_history)
+        error_variance = sum((e - error_mean) ** 2 for e in self.error_history) / len(self.error_history)
+        
+        # Adaptive gains based on error statistics
+        if error_variance > 100:  # High oscillation
+            self.adaptive_gains["Kp"] *= 0.95
+            self.adaptive_gains["Ki"] *= 0.95
+        elif error_variance < 10:  # Low oscillation
+            self.adaptive_gains["Kp"] *= 1.05
+            self.adaptive_gains["Ki"] *= 1.05
+        
+        # Update PID with adaptive gains
+        P = self.adaptive_gains["Kp"] * error
+        self.integral += error
+        I = self.adaptive_gains["Ki"] * self.integral
+        D = self.adaptive_gains["Kd"] * (error - self.previous_error)
+        
+        output = P + I + D
+        self.previous_error = error
+        
+        return output
+
 class holonomic:    
     pids = {
-        "lf": PID(Kp=1.2, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
-        "lb": PID(Kp=1.2, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
-        "rf": PID(Kp=1.1, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
-        "rb": PID(Kp=1.1, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
+        "lf": AdvancedPID(Kp=1.2, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
+        "lb": AdvancedPID(Kp=1.2, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
+        "rf": AdvancedPID(Kp=1.1, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
+        "rb": AdvancedPID(Kp=1.1, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
     }
 
     # Motor tuning for different movement types
@@ -415,34 +418,6 @@ class Auto:
         pass
     
     def left():
-        # Vertical_intake.set_reverse(True)
-        # Vertical_intake.on(100)
-        # Shooter_feed.set_reverse(False)
-        # Shooter_feed.on(25)
-        # Front_intake.set_reverse(True)
-        # Front_intake.on(60)
-        # holonomic.move_forward(50) #move forward 
-        # time.sleep(2.51)
-        # motors.stop()
-        # holonomic.turn_left(60) #turn around
-        # time.sleep(1.93)
-        # motors.stop()
-        # holonomic.slide_left(45) #slide for discs
-        # time.sleep(2)
-        # motors.stop()
-        # holonomic.move_forward(25) #move to take discs
-        # time.sleep(3.6)
-        # motors.stop()
-        # holonomic.slide_left(45)
-        # time.sleep(1.2)
-        # motors.stop()
-        # holonomic.turn_right(60)
-        # time.sleep(1.92)
-        # motors.stop()
-        # holonomic.move_forward(25)
-        # time.sleep(2)
-        # motors.stop()
-        # time.sleep(500000)
         pass
 
 class dc_motor:
@@ -455,12 +430,10 @@ class dc_motor:
     def __init__(self, port: str) -> None:
         self.dc_port = port
         
-    # Method to set the direction of the motor
-    def set_reverse(self, rev: bool) -> None:
-        self.reverse = rev
-        
     # Method to turn on the DC motor
-    def on(self, Power: int) -> None:
+    def on(self, Power: int, rev: bool = None) -> None:
+        if rev is not None:
+            self.reverse = rev
         power = -Power if self.reverse else Power
         power_expand_board.set_power(self.dc_port, power)
         
@@ -547,9 +520,6 @@ class runtime:
             motors.drive(0, 0, 0, 0)
     def change_mode():
         if novapi.timer() > 0.9:
-            Vertical_intake.off()
-            Shooter_feed.off()
-            Front_intake.off()
             if runtime.CTRL_MODE == 0:
                 runtime.CTRL_MODE = 1
             else:
@@ -560,47 +530,30 @@ class shoot_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
         if gamepad.is_key_pressed("N2"):
-            Vertical_intake.set_reverse(False)
-            Vertical_intake.on(100)
-            Shooter_feed.set_reverse(True)
-            Shooter_feed.on(100)
-            Front_intake.set_reverse(True)
-            Front_intake.on(100)  
+            Vertical_intake.on(100, True)
+            Shooter_feed.on(100, True)
+            Front_intake.on(100, True)  
         elif gamepad.is_key_pressed("N3"):
-            Vertical_intake.set_reverse(False)
-            Vertical_intake.on(100)
-            Shooter_feed.set_reverse(True)
-            Shooter_feed.on(100)
-            Front_intake.set_reverse(True)
-            Front_intake.on(100)
+            Vertical_intake.on(100, False)
+            Shooter_feed.on(100, False)
+            Front_intake.on(100, False)
         else:
             Vertical_intake.off()
             Shooter_feed.off()
             Front_intake.off()
 
         if gamepad.is_key_pressed("R1"):
-            # bl_1.on()
-            # bl_2.on()
-            pass
+            bl_1.on()
+            bl_2.on()
         else:
-            # bl_1.off()
-            # bl_2.off()
-            pass
-        if gamepad.is_key_pressed("≡"):
-            # laser.set_reverse(True)
-            # laser.on(100)
-        elif gamepad.is_key_pressed("+"):
-            # laser.off()
-            pass
-        else:
-            pass
-        #shooter_angle control
+            bl_1.off()
+            bl_2.off()
+            #shooter_angle control
         if gamepad.is_key_pressed("Up"):
-            # shooter.move(8, 10)
-            pass
+            shooter.move(8, 10)
+
         elif gamepad.is_key_pressed("Down"):
-            # shooter.move(-8, 10)
-            pass
+            shooter.move(-8, 10)
         else:
             pass
  
@@ -608,20 +561,16 @@ class gripper_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
         if gamepad.is_key_pressed("Up"):
-            # lift.set_power(-90)
-            pass
+            lift.on(100, True)
         elif gamepad.is_key_pressed("Down"):
-            # lift.set_power(90)
-            pass
+            lift.on(100, False)
         else:
-            # lift.set_speed(0)
+            lift.off()
         if gamepad.is_key_pressed("N1"):
-            # gripper1.set_reverse(True)
             # gripper1.on(100)
             pass
 
         elif gamepad.is_key_pressed("N4"):
-            # gripper1.set_reverse(False)
             # gripper1.on(100)
             pass
         else:
@@ -630,31 +579,24 @@ class gripper_mode:
         
 
 # Instantiate DC motors
-# lift = encoder_motor_class("M4", "INDEX1") # using encoder for spacific position of lift functions
-# cooling = dc_motor("DC2")
-# gripper1 = dc_motor("DC1")
-# Conveyor = dc_motor("DC5")
+lift = dc_motor("DC4") # using encoder for spacific position of lift functions
 Shooter_feed = dc_motor("DC3")
 Vertical_intake = dc_motor("DC2")
 Front_intake = dc_motor("DC1")
-# bl_1 = brushless_motor("BL1")
-# bl_2 = brushless_motor("BL2")
-# shooter = smartservo_class("M1", "INDEX1") # only for angles
-# laser = dc_motor("DC8")
+bl_1 = brushless_motor("BL1")
+bl_2 = brushless_motor("BL2")
+shooter = smartservo_class("M1", "INDEX1") # only for angles
 
 
 while True:
-    # cooling.set_reverse(True)
-    # cooling.on(100)
     if power_manage_module.is_auto_mode():
         pass
     else:
+        runtime.move_1() 
         if gamepad.is_key_pressed("L2") and gamepad.is_key_pressed("R2"):
             runtime.change_mode()
         else:
             if runtime.CTRL_MODE == 0:
                 shoot_mode.control_button()
-                runtime.move_1()
             else:
                 gripper_mode.control_button()
-                runtime.move_2()
