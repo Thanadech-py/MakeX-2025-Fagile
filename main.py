@@ -12,458 +12,362 @@ from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
 import time
 
-left_forward_wheel = encoder_motor_class("M2", "INDEX1")
-right_forward_wheel = encoder_motor_class("M3", "INDEX1")
-left_back_wheel = encoder_motor_class("M5", "INDEX1")
-right_back_wheel = encoder_motor_class("M6", "INDEX1")
-
+# Motor constants
 MAX_SPEED = 350
 SPEED_MULTIPLIER = 2.1
 PID_SPEED_MULTIPLIER = 2.1
 BL_POWER = 100
 
+# Initialize motors
+left_forward_wheel = encoder_motor_class("M2", "INDEX1")
+right_forward_wheel = encoder_motor_class("M3", "INDEX1")
+left_back_wheel = encoder_motor_class("M5", "INDEX1")
+right_back_wheel = encoder_motor_class("M6", "INDEX1")
+
 
 class PID:
-    def __init__(self, Kp, Ki, Kd, setpoint=0, max_integral=1000, max_output=255):
-        self.Kp = Kp  # Proportional gain
-        self.Ki = Ki  # Integral gain
-        self.Kd = Kd  # Derivative gain
-        self.setpoint = setpoint  # Desired value (target)
-        self.integral = 0  # Sum of errors over time
-        self.previous_error = 0  # Previous error (used for derivative)
-        self.max_integral = max_integral  # Maximum integral value to prevent windup
-        self.max_output = max_output  # Maximum output value
-        self.previous_time = time.time()  # For delta time calculation
-        self.ff_gain = 0.1  # Feedforward gain
+    """PID controller class for motor control."""
+    
+    def __init__(self, kp, ki, kd, setpoint=0, max_integral=1000, max_output=255):
+        """Initialize PID controller with gains and limits.
+        
+        Args:
+            kp (float): Proportional gain
+            ki (float): Integral gain
+            kd (float): Derivative gain
+            setpoint (float): Target value
+            max_integral (float): Maximum integral value
+            max_output (float): Maximum output value
+        """
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+        self.setpoint = setpoint
+        self.integral = 0
+        self.previous_error = 0
+        self.max_integral = max_integral
+        self.max_output = max_output
+        self.previous_time = time.time()
+        self.ff_gain = 0.1
 
     def update(self, current_value):
-        # Calculate delta time
+        """Update PID controller with new measurement.
+        
+        Args:
+            current_value (float): Current measured value
+            
+        Returns:
+            float: Control output
+        """
         current_time = time.time()
         dt = current_time - self.previous_time
         self.previous_time = current_time
 
-        # Calculate the error (setpoint - current value)
         error = self.setpoint - current_value
         
         # Proportional term
-        P = self.Kp * error
+        p = self.kp * error
         
         # Integral term with anti-windup
         self.integral += error * dt
-        # Clamp integral to prevent windup
         self.integral = max(min(self.integral, self.max_integral), -self.max_integral)
-        I = self.Ki * self.integral
+        i = self.ki * self.integral
 
         # Derivative term with error clamping
         error_change = error - self.previous_error
-        # Clamp error change to prevent spikes
         error_change = max(min(error_change, 100), -100)
-        D = self.Kd * (error_change / dt) if dt > 0 else 0
+        d = self.kd * (error_change / dt) if dt > 0 else 0
 
         # Feedforward term
-        FF = self.ff_gain * self.setpoint
+        ff = self.ff_gain * self.setpoint
 
-        # Calculate the output
-        output = P + I + D + FF
-
-        # Clamp output to prevent motor damage
+        # Calculate output
+        output = p + i + d + ff
         output = max(min(output, self.max_output), -self.max_output)
 
-        # Save the current error for the next update
         self.previous_error = error
-
         return output
 
     def set_setpoint(self, setpoint):
-        self.setpoint = setpoint
-        self.integral = 0  # Reset the integral to avoid wind-up
-        self.previous_error = 0  # Reset previous error to avoid a large derivative spike
-        self.previous_time = time.time()  # Reset time for delta time calculation
-
-
-class motors:
-    
-    def drive(lf: int, lb: int, rf: int, rb: int):
-        left_back_wheel.set_speed(lb) # left back :DDDDD
-        right_back_wheel.set_speed(-rb)  # RIGHT BACK  
-        right_forward_wheel.set_speed(-(rf))      # RIGHT FORWARD
-        left_forward_wheel.set_speed(lf)             # LEFT BACK
-    
-    def stop():
-        motors.drive(0, 0, 0, 0)
+        """Set new target value and reset controller state.
         
-class util:
+        Args:
+            setpoint (float): New target value
+        """
+        self.setpoint = setpoint
+        self.integral = 0
+        self.previous_error = 0
+        self.previous_time = time.time()
+
+
+class Motors:
+    """Class for controlling all robot motors."""
+    
+    @staticmethod
+    def drive(lf, lb, rf, rb):
+        """Drive all motors with specified speeds.
+        
+        Args:
+            lf (int): Left forward speed
+            lb (int): Left back speed
+            rf (int): Right forward speed
+            rb (int): Right back speed
+        """
+        left_back_wheel.set_speed(lb)
+        right_back_wheel.set_speed(-rb)
+        right_forward_wheel.set_speed(-rf)
+        left_forward_wheel.set_speed(lf)
+    
+    @staticmethod
+    def stop():
+        """Stop all motors."""
+        Motors.drive(0, 0, 0, 0)
+
+
+class Util:
+    """Utility class for common functions."""
+    
+    @staticmethod
     def restrict(val, minimum, maximum):
+        """Restrict value to range.
+        
+        Args:
+            val (float): Value to restrict
+            minimum (float): Minimum allowed value
+            maximum (float): Maximum allowed value
+            
+        Returns:
+            float: Restricted value
+        """
         return max(min(val, maximum), minimum)
         
+    @staticmethod
     def apply_deadzone(value, deadzone):
+        """Apply deadzone to value.
+        
+        Args:
+            value (float): Input value
+            deadzone (float): Deadzone threshold
+            
+        Returns:
+            float: Value with deadzone applied
+        """
         if abs(value) < deadzone:
             return 0
         return value
         
+    @staticmethod
     def apply_response_curve(value, curve=2.0):
-        # Apply a power curve to make the response more natural
-        # curve > 1 makes the response more sensitive at low values
-        # curve < 1 makes the response less sensitive at low values
+        """Apply response curve to value.
+        
+        Args:
+            value (float): Input value
+            curve (float): Curve exponent
+            
+        Returns:
+            float: Value with response curve applied
+        """
         sign = 1 if value >= 0 else -1
         return sign * (abs(value) ** curve)
         
+    @staticmethod
     def scale_joystick(value, max_speed=100):
-        # Scale joystick value (-100 to 100) to motor speed (-max_speed to max_speed)
+        """Scale joystick value to motor speed.
+        
+        Args:
+            value (float): Joystick value (-100 to 100)
+            max_speed (float): Maximum motor speed
+            
+        Returns:
+            float: Scaled motor speed
+        """
         return (value / 100.0) * max_speed
 
-class MotionProfile:
-    def __init__(self, max_velocity, max_acceleration, max_jerk):
-        self.max_velocity = max_velocity
-        self.max_acceleration = max_acceleration
-        self.max_jerk = max_jerk
-        self.current_position = 0
-        self.current_velocity = 0
-        self.current_acceleration = 0
-        self.target_position = 0
-        self.last_time = time.time()
 
-    def update(self, target_position):
-        current_time = time.time()
-        dt = current_time - self.last_time
-        self.last_time = current_time
-
-        # Calculate position error
-        position_error = target_position - self.current_position
-
-        # Calculate desired velocity using trapezoidal profile
-        if abs(position_error) < 0.1:  # Close enough to target
-            desired_velocity = 0
-        else:
-            # Calculate maximum possible velocity at current position
-            max_possible_velocity = math.sqrt(2 * self.max_acceleration * abs(position_error))
-            desired_velocity = math.copysign(min(abs(position_error) / dt, max_possible_velocity, self.max_velocity), position_error)
-
-        # Calculate velocity error
-        velocity_error = desired_velocity - self.current_velocity
-
-        # Update acceleration with jerk limit
-        desired_acceleration = velocity_error / dt
-        acceleration_change = desired_acceleration - self.current_acceleration
-        acceleration_change = max(min(acceleration_change, self.max_jerk * dt), -self.max_jerk * dt)
-        self.current_acceleration += acceleration_change
-
-        # Update velocity with acceleration limit
-        self.current_velocity += self.current_acceleration * dt
-        self.current_velocity = max(min(self.current_velocity, self.max_velocity), -self.max_velocity)
-
-        # Update position
-        self.current_position += self.current_velocity * dt
-
-        return self.current_position, self.current_velocity, self.current_acceleration
-
-class AdvancedPID(PID):
-    def __init__(self, Kp, Ki, Kd, setpoint=0, max_integral=1000, max_output=255):
-        super().__init__(Kp, Ki, Kd, setpoint, max_integral, max_output)
-        self.error_history = []
-        self.max_history = 10
-        self.adaptive_gains = {
-            "Kp": Kp,
-            "Ki": Ki,
-            "Kd": Kd
-        }
-        self.learning_rate = 0.001
-
-    def update(self, current_value):
-        # Calculate error
-        error = self.setpoint - current_value
+class DCMotor:
+    """DC motor control class."""
+    
+    def __init__(self, port):
+        """Initialize DC motor with port.
         
-        # Update error history
-        self.error_history.append(error)
-        if len(self.error_history) > self.max_history:
-            self.error_history.pop(0)
+        Args:
+            port (str): Motor port (e.g., "DC1")
+        """
+        self.port = port
+        self.reverse = False
         
-        # Calculate error statistics
-        error_mean = sum(self.error_history) / len(self.error_history)
-        error_variance = sum((e - error_mean) ** 2 for e in self.error_history) / len(self.error_history)
+    def on(self, power, reverse=None):
+        """Turn on motor with specified power and direction.
         
-        # Adaptive gains based on error statistics
-        if error_variance > 100:  # High oscillation
-            self.adaptive_gains["Kp"] *= 0.95
-            self.adaptive_gains["Ki"] *= 0.95
-        elif error_variance < 10:  # Low oscillation
-            self.adaptive_gains["Kp"] *= 1.05
-            self.adaptive_gains["Ki"] *= 1.05
+        Args:
+            power (int): Motor power (0-100)
+            reverse (bool, optional): Motor direction
+        """
+        if reverse is not None:
+            self.reverse = reverse
+        power = -power if self.reverse else power
+        power_expand_board.set_power(self.port, power)
         
-        # Update PID with adaptive gains
-        P = self.adaptive_gains["Kp"] * error
-        self.integral += error
-        I = self.adaptive_gains["Ki"] * self.integral
-        D = self.adaptive_gains["Kd"] * (error - self.previous_error)
-        
-        output = P + I + D
-        self.previous_error = error
-        
-        return output
+    def off(self):
+        """Turn off motor."""
+        power_expand_board.stop(self.port)
 
-class holonomic:    
+
+class BrushlessMotor:
+    """Brushless motor control class."""
+    
+    def __init__(self, port):
+        """Initialize brushless motor with port.
+        
+        Args:
+            port (str): Motor port (e.g., "BL1")
+        """
+        self.port = port
+        
+    def on(self):
+        """Turn on brushless motor."""
+        power_expand_board.set_power(self.port, BL_POWER)
+        
+    def off(self):
+        """Turn off brushless motor."""
+        power_expand_board.stop(self.port)
+
+
+# Instantiate motors
+lift = DCMotor("DC5")
+shooter_feed = DCMotor("DC3")
+vertical_intake = DCMotor("DC2")
+front_intake = DCMotor("DC1")
+bl_1 = BrushlessMotor("BL1")
+bl_2 = BrushlessMotor("BL2")
+shooter = smartservo_class("M1", "INDEX1")
+
+
+class Holonomic:
+    """Holonomic drive control class."""
+    
+    # PID controllers for each wheel
     pids = {
-        "lf": AdvancedPID(Kp=1.2, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
-        "lb": AdvancedPID(Kp=1.2, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
-        "rf": AdvancedPID(Kp=1.1, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
-        "rb": AdvancedPID(Kp=1.1, Ki=0.1, Kd=0.05, max_integral=1000, max_output=255),
+        "lf": PID(kp=1.2, ki=0.1, kd=0.05, max_integral=1000, max_output=255),
+        "lb": PID(kp=1.2, ki=0.1, kd=0.05, max_integral=1000, max_output=255),
+        "rf": PID(kp=1.1, ki=0.1, kd=0.05, max_integral=1000, max_output=255),
+        "rb": PID(kp=1.1, ki=0.1, kd=0.05, max_integral=1000, max_output=255),
     }
 
-    # Motor tuning for different movement types
-    tune = {
-        "slide": {
-            "fl": 1.5,  # front left wheel during sliding
-            "fr": 1.5,  # front right wheel during sliding
-            "bl": 1.5,  # back left wheel during sliding
-            "br": 1.5   # back right wheel during sliding
-        },
-        "forward": {
-            "fl": 1.0,  # front left wheel during forward movement
-            "fr": 1.0,  # front right wheel during forward movement
-            "bl": 1.0,  # back left wheel during forward movement
-            "br": 1.0   # back right wheel during forward movement
-        },
-        "turn": {
-            "fl": 1.0,  # front left wheel during turning
-            "fr": 1.0,  # front right wheel during turning
-            "bl": 1.0,  # back left wheel during turning
-            "br": 1.0   # back right wheel during turning
-        }
-    }
-
-    # Auto-tuning parameters
-    auto_tune = {
-        "enabled": False,
-        "last_error": {
-            "slide": {"fl": 0, "fr": 0, "bl": 0, "br": 0},
-            "forward": {"fl": 0, "fr": 0, "bl": 0, "br": 0},
-            "turn": {"fl": 0, "fr": 0, "bl": 0, "br": 0}
-        },
-        "tune_step": 0.05,  # How much to adjust tuning values each step
-        "min_tune": 0.5,    # Minimum tuning value
-        "max_tune": 2.0     # Maximum tuning value
-    }
-
-    # Motion profiles for each movement type
-    motion_profiles = {
-        "slide": MotionProfile(max_velocity=100, max_acceleration=50, max_jerk=20),
-        "forward": MotionProfile(max_velocity=100, max_acceleration=50, max_jerk=20),
-        "turn": MotionProfile(max_velocity=100, max_acceleration=50, max_jerk=20)
-    }
-
-    def auto_tune_wheels(movement_type, target_speed, actual_speeds):
-        if not holonomic.auto_tune["enabled"]:
-            return
-            
-        # Calculate errors for each wheel
-        errors = {
-            "fl": target_speed - actual_speeds["fl"],
-            "fr": target_speed - actual_speeds["fr"],
-            "bl": target_speed - actual_speeds["bl"],
-            "br": target_speed - actual_speeds["br"]
-        }
+    @staticmethod
+    def drive(vx, vy, wl, deadzone=25, pid=False):
+        """Drive the robot using holonomic kinematics.
         
-        # Update tuning values based on errors
-        for wheel in ["fl", "fr", "bl", "br"]:
-            error = errors[wheel]
-            last_error = holonomic.auto_tune["last_error"][movement_type][wheel]
-            
-            # If error is getting worse, adjust tuning in opposite direction
-            if abs(error) > abs(last_error):
-                if error > 0:
-                    holonomic.tune[movement_type][wheel] -= holonomic.auto_tune["tune_step"]
-                else:
-                    holonomic.tune[movement_type][wheel] += holonomic.auto_tune["tune_step"]
-            # If error is getting better, keep adjusting in same direction
-            else:
-                if error > 0:
-                    holonomic.tune[movement_type][wheel] += holonomic.auto_tune["tune_step"]
-                else:
-                    holonomic.tune[movement_type][wheel] -= holonomic.auto_tune["tune_step"]
-            
-            # Clamp tuning values
-            holonomic.tune[movement_type][wheel] = max(
-                min(holonomic.tune[movement_type][wheel], holonomic.auto_tune["max_tune"]),
-                holonomic.auto_tune["min_tune"]
-            )
-            
-            # Update last error
-            holonomic.auto_tune["last_error"][movement_type][wheel] = error
-
-    def drive(vx, vy, wL, deadzone=25, pid=False):
-        global SPEED_MULTIPLIER, PID_SPEED_MULTIPLIER
-        
-        # Apply motion profiling
-        if math.fabs(vx) > math.fabs(vy) and vx > 0:
-            # Sliding movement
-            vx, _, _ = holonomic.motion_profiles["slide"].update(vx)
-        elif math.fabs(vy) > math.fabs(vx) and vy > 0:
-            # Forward/backward movement
-            vy, _, _ = holonomic.motion_profiles["forward"].update(vy)
-        elif math.fabs(wL) > math.fabs(vx) and math.fabs(wL) > math.fabs(vy):
-            # Turning movement
-            wL, _, _ = holonomic.motion_profiles["turn"].update(wL)
-
-        if math.fabs(vx) < math.fabs(deadzone):
+        Args:
+            vx (float): X velocity (sideways)
+            vy (float): Y velocity (forward/backward)
+            wl (float): Angular velocity (rotation)
+            deadzone (float): Deadzone threshold for joystick inputs
+            pid (bool): Whether to use PID control
+        """
+        # Apply deadzone
+        if abs(vx) < deadzone:
             vx = 0
-        if math.fabs(vy) < math.fabs(deadzone):
+        if abs(vy) < deadzone:
             vy = 0
-        if math.fabs(wL) < math.fabs(deadzone):
-            wL = 0
+        if abs(wl) < deadzone:
+            wl = 0
 
-        # Ensure the correct speed multiplier
+        # Calculate wheel speeds using holonomic kinematics
         multiplier = PID_SPEED_MULTIPLIER if pid else SPEED_MULTIPLIER
-            
-        # Calculation for the wheel speed with improved kinematics
-        vFL = (vx + (vy * 1.2) + wL) * multiplier
-        vFR = (-(vx) + (vy * 1.2) - wL) * multiplier
-        vBL = (-(vx) + (vy * 1.2) + wL) * multiplier
-        vBR = (vx + (vy * 1.2) - wL) * multiplier
         
-        # Store target speeds for auto-tuning
-        target_speeds = {"fl": vFL, "fr": vFR, "bl": vBL, "br": vBR}
-        
-        # Apply tuning based on movement type
-        if math.fabs(vx) > math.fabs(vy) and vx > 0:
-            # Sliding movement
-            vFL *= holonomic.tune["slide"]["fl"]
-            vFR *= holonomic.tune["slide"]["fr"]
-            vBL *= holonomic.tune["slide"]["bl"]
-            vBR *= holonomic.tune["slide"]["br"]
-            
-            # Auto-tune for sliding
-            if pid:
-                actual_speeds = {
-                    "fl": -left_forward_wheel.get_value("speed"),
-                    "fr": right_forward_wheel.get_value("speed"),
-                    "bl": -left_back_wheel.get_value("speed"),
-                    "br": right_back_wheel.get_value("speed")
-                }
-                holonomic.auto_tune_wheels("slide", vx, actual_speeds)
-        elif math.fabs(vy) > math.fabs(vx) and vy > 0:
-            # Forward/backward movement
-            vFL *= holonomic.tune["forward"]["fl"]
-            vFR *= holonomic.tune["forward"]["fr"]
-            vBL *= holonomic.tune["forward"]["bl"]
-            vBR *= holonomic.tune["forward"]["br"]
-            
-            # Auto-tune for forward/backward
-            if pid:
-                actual_speeds = {
-                    "fl": -left_forward_wheel.get_value("speed"),
-                    "fr": right_forward_wheel.get_value("speed"),
-                    "bl": -left_back_wheel.get_value("speed"),
-                    "br": right_back_wheel.get_value("speed")
-                }
-                holonomic.auto_tune_wheels("forward", vy, actual_speeds)
-        elif math.fabs(wL) > math.fabs(vx) and math.fabs(wL) > math.fabs(vy):
-            # Turning movement
-            vFL *= holonomic.tune["turn"]["fl"]
-            vFR *= holonomic.tune["turn"]["fr"]
-            vBL *= holonomic.tune["turn"]["bl"]
-            vBR *= holonomic.tune["turn"]["br"]
-            
-            # Auto-tune for turning
-            if pid:
-                actual_speeds = {
-                    "fl": -left_forward_wheel.get_value("speed"),
-                    "fr": right_forward_wheel.get_value("speed"),
-                    "bl": -left_back_wheel.get_value("speed"),
-                    "br": right_back_wheel.get_value("speed")
-                }
-                holonomic.auto_tune_wheels("turn", wL, actual_speeds)
-        
-        if pid:            
-            # Left Forward
-            holonomic.pids["lf"].set_setpoint(vFL)
-            vFL = holonomic.pids["lf"].update(-left_forward_wheel.get_value("speed"))
-            # Left Back
-            holonomic.pids["lb"].set_setpoint(vBL)
-            vBL = holonomic.pids["lb"].update(-left_back_wheel.get_value("speed"))
-            # Right Forward
-            holonomic.pids["rf"].set_setpoint(vFR)
-            vFR = holonomic.pids["rf"].update(right_forward_wheel.get_value("speed"))
-            # Right Back
-            holonomic.pids["rb"].set_setpoint(vBR)
-            vBR = holonomic.pids["rb"].update(right_back_wheel.get_value("speed"))
+        # Front Left
+        vfl = (vx + vy + wl) * multiplier
+        # Front Right
+        vfr = (-vx + vy - wl) * multiplier
+        # Back Left
+        vbl = (-vx + vy + wl) * multiplier
+        # Back Right
+        vbr = (vx + vy - wl) * multiplier
 
-        # Velocity
-        vFL = util.restrict(vFL, -MAX_SPEED, MAX_SPEED)
-        vFR = util.restrict(vFR, -MAX_SPEED, MAX_SPEED)
-        vBL = util.restrict(vBL, -MAX_SPEED, MAX_SPEED)
-        vBR = util.restrict(vBR, -MAX_SPEED, MAX_SPEED)
-        # Drive motor
-        motors.drive(vFL, vBL, vFR, vBR)
-        
+        if pid:
+            # Update PID controllers and get corrected speeds
+            Holonomic.pids["lf"].set_setpoint(vfl)
+            vfl = Holonomic.pids["lf"].update(-left_forward_wheel.get_value("speed"))
+            
+            Holonomic.pids["lb"].set_setpoint(vbl)
+            vbl = Holonomic.pids["lb"].update(-left_back_wheel.get_value("speed"))
+            
+            Holonomic.pids["rf"].set_setpoint(vfr)
+            vfr = Holonomic.pids["rf"].update(right_forward_wheel.get_value("speed"))
+            
+            Holonomic.pids["rb"].set_setpoint(vbr)
+            vbr = Holonomic.pids["rb"].update(right_back_wheel.get_value("speed"))
+
+        # Restrict speeds to maximum
+        vfl = Util.restrict(vfl, -MAX_SPEED, MAX_SPEED)
+        vfr = Util.restrict(vfr, -MAX_SPEED, MAX_SPEED)
+        vbl = Util.restrict(vbl, -MAX_SPEED, MAX_SPEED)
+        vbr = Util.restrict(vbr, -MAX_SPEED, MAX_SPEED)
+
+        # Drive motors
+        Motors.drive(vfl, vbl, vfr, vbr)
+
+    @staticmethod
     def move_forward(power):
-        holonomic.drive(0, power, 0)
+        """Move robot forward.
         
+        Args:
+            power (float): Power level (0-100)
+        """
+        Holonomic.drive(0, power, 0)
+        
+    @staticmethod
     def move_backward(power):
-        holonomic.drive(0, -power, 0)
+        """Move robot backward.
         
+        Args:
+            power (float): Power level (0-100)
+        """
+        Holonomic.drive(0, -power, 0)
+        
+    @staticmethod
     def slide_right(power):
-        holonomic.drive(power, 0, 0)
+        """Slide robot right.
         
+        Args:
+            power (float): Power level (0-100)
+        """
+        Holonomic.drive(power, 0, 0)
+        
+    @staticmethod
     def slide_left(power):
-        holonomic.drive(-power, 0, 0)
+        """Slide robot left.
         
+        Args:
+            power (float): Power level (0-100)
+        """
+        Holonomic.drive(-power, 0, 0)
+        
+    @staticmethod
     def turn_right(power):
-        holonomic.drive(0, 0, power)
+        """Turn robot right.
         
+        Args:
+            power (float): Power level (0-100)
+        """
+        Holonomic.drive(0, 0, power)
+        
+    @staticmethod
     def turn_left(power):
-        holonomic.drive(0, 0, -power)
+        """Turn robot left.
+        
+        Args:
+            power (float): Power level (0-100)
+        """
+        Holonomic.drive(0, 0, -power)
 
-class Auto:
-    def right():
-        pass
+
+class Runtime:
+    """Runtime control class."""
     
-    def left():
-        pass
-
-class dc_motor:
-    # Default DC port
-    dc_port = "DC1"
-    # Default direction (not reversed)
-    reverse = False
-    
-    # Initialize DC motor with a specific port
-    def __init__(self, port: str) -> None:
-        self.dc_port = port
-        
-    # Method to turn on the DC motor
-    def on(self, Power: int, rev: bool = None) -> None:
-        if rev is not None:
-            self.reverse = rev
-        power = -Power if self.reverse else Power
-        power_expand_board.set_power(self.dc_port, power)
-        
-    # Method to turn off the DC motor
-    def off(self) -> None:
-        power_expand_board.stop(self.dc_port)
-        
-class brushless_motor:
-    # Default brushless motor port
-    bl_port = "BL1"
-    
-    # Initialize brushless motor with a specific port
-    def __init__(self, port: str) -> None:
-        self.bl_port = port
-        
-    # Method to turn on the brushless motor
-    def on(self) -> None:
-        power_expand_board.set_power(self.bl_port, BL_POWER)
-        
-    # Method to turn off the brushless motor
-    def off(self) -> None:
-        power_expand_board.stop(self.bl_port)
-
-      
-
-class runtime:
-    # Define control mode
+    # Control mode
     CTRL_MODE = 0
-    
-    # Robot state
     ENABLED = True
     
     # Joystick settings
@@ -471,76 +375,84 @@ class runtime:
     RESPONSE_CURVE = 1.5
     MAX_SPEED = 100
     
-    # Joystick PID controllers
+    # PID controllers for joystick
     joystick_pids = {
-        "lx": PID(Kp=0.8, Ki=0.05, Kd=0.1, max_integral=500, max_output=100),
-        "ly": PID(Kp=0.8, Ki=0.05, Kd=0.1, max_integral=500, max_output=100),
-        "rx": PID(Kp=0.8, Ki=0.05, Kd=0.1, max_integral=500, max_output=100)
+        "lx": PID(kp=0.8, ki=0.05, kd=0.1, max_integral=500, max_output=100),
+        "ly": PID(kp=0.8, ki=0.05, kd=0.1, max_integral=500, max_output=100),
+        "rx": PID(kp=0.8, ki=0.05, kd=0.1, max_integral=500, max_output=100)
     }
     
+    @staticmethod
     def process_joystick(value, axis):
-        # Apply deadzone
-        value = util.apply_deadzone(value, runtime.JOYSTICK_DEADZONE)
+        """Process joystick input with PID control.
+        
+        Args:
+            value (float): Joystick value
+            axis (str): Axis identifier
+            
+        Returns:
+            float: Processed value
+        """
+        value = Util.apply_deadzone(value, Runtime.JOYSTICK_DEADZONE)
         if value == 0:
-            runtime.joystick_pids[axis].set_setpoint(0)
+            Runtime.joystick_pids[axis].set_setpoint(0)
             return 0
             
-        # Apply response curve
-        value = util.apply_response_curve(value, runtime.RESPONSE_CURVE)
-        
-        # Update PID controller
-        runtime.joystick_pids[axis].set_setpoint(value)
-        pid_output = runtime.joystick_pids[axis].update(value)
-        
-        # Scale to max speed
-        return util.scale_joystick(pid_output, runtime.MAX_SPEED)
+        value = Util.apply_response_curve(value, Runtime.RESPONSE_CURVE)
+        Runtime.joystick_pids[axis].set_setpoint(value)
+        pid_output = Runtime.joystick_pids[axis].update(value)
+        return Util.scale_joystick(pid_output, Runtime.MAX_SPEED)
     
+    @staticmethod
     def move_1():
-        # Get and process joystick values with PID
-        lx = runtime.process_joystick(gamepad.get_joystick("Lx"), "lx")
-        ly = runtime.process_joystick(gamepad.get_joystick("Ly"), "ly")
-        rx = runtime.process_joystick(gamepad.get_joystick("Rx"), "rx")
+        """Control robot movement in mode 1."""
+        lx = Runtime.process_joystick(gamepad.get_joystick("Lx"), "lx")
+        ly = Runtime.process_joystick(gamepad.get_joystick("Ly"), "ly")
+        rx = Runtime.process_joystick(gamepad.get_joystick("Rx"), "rx")
         
-        # Only drive if any joystick is active
         if lx != 0 or ly != 0 or rx != 0:
-            holonomic.drive(-lx, ly, -rx, pid=True)
+            Holonomic.drive(-lx, ly, -rx, pid=True)
         else:
-            motors.drive(0, 0, 0, 0)
+            Motors.stop()
 
+    @staticmethod
     def move_2():
-        # Get and process joystick values with PID
-        lx = runtime.process_joystick(gamepad.get_joystick("Lx"), "lx")
-        ly = runtime.process_joystick(gamepad.get_joystick("Ly"), "ly")
-        rx = runtime.process_joystick(gamepad.get_joystick("Rx"), "rx")
+        """Control robot movement in mode 2."""
+        lx = Runtime.process_joystick(gamepad.get_joystick("Lx"), "lx")
+        ly = Runtime.process_joystick(gamepad.get_joystick("Ly"), "ly")
+        rx = Runtime.process_joystick(gamepad.get_joystick("Rx"), "rx")
         
-        # Only drive if any joystick is active
         if lx != 0 or ly != 0 or rx != 0:
-            holonomic.drive(lx, -ly, -rx, pid=True)
+            Holonomic.drive(lx, -ly, -rx, pid=True)
         else:
-            motors.drive(0, 0, 0, 0)
+            Motors.stop()
+
+    @staticmethod
     def change_mode():
+        """Switch between control modes."""
         if novapi.timer() > 0.9:
-            if runtime.CTRL_MODE == 0:
-                runtime.CTRL_MODE = 1
-            else:
-                runtime.CTRL_MODE = 0
+            Runtime.CTRL_MODE = 1 if Runtime.CTRL_MODE == 0 else 0
             novapi.reset_timer()
 
-class shoot_mode:
-    # Method to control various robot functions based on button inputs
+
+class ShootMode:
+    """Shooting mode control class."""
+    
+    @staticmethod
     def control_button():
+        """Control shooting mode functions."""
         if gamepad.is_key_pressed("N2"):
-            Vertical_intake.on(100, True)
-            Shooter_feed.on(100, True)
-            Front_intake.on(100, True)  
+            vertical_intake.on(100, True)
+            shooter_feed.on(100, True)
+            front_intake.on(100, True)
         elif gamepad.is_key_pressed("N3"):
-            Vertical_intake.on(100, False)
-            Shooter_feed.on(100, False)
-            Front_intake.on(100, False)
+            vertical_intake.on(100, False)
+            shooter_feed.on(100, False)
+            front_intake.on(100, False)
         else:
-            Vertical_intake.off()
-            Shooter_feed.off()
-            Front_intake.off()
+            vertical_intake.off()
+            shooter_feed.off()
+            front_intake.off()
 
         if gamepad.is_key_pressed("R1"):
             bl_1.on()
@@ -548,55 +460,38 @@ class shoot_mode:
         else:
             bl_1.off()
             bl_2.off()
-            #shooter_angle control
+
         if gamepad.is_key_pressed("Up"):
             shooter.move(8, 10)
-
         elif gamepad.is_key_pressed("Down"):
             shooter.move(-8, 10)
-        else:
-            pass
- 
-class gripper_mode:
-    # Method to control various robot functions based on button inputs
+
+
+class GripperMode:
+    """Gripper mode control class."""
+    
+    @staticmethod
     def control_button():
+        """Control gripper mode functions."""
         if gamepad.is_key_pressed("Up"):
             lift.on(100, True)
         elif gamepad.is_key_pressed("Down"):
             lift.on(100, False)
         else:
             lift.off()
-        if gamepad.is_key_pressed("N1"):
-            # gripper1.on(100)
-            pass
-
-        elif gamepad.is_key_pressed("N4"):
-            # gripper1.on(100)
-            pass
-        else:
-            # gripper1.off()
-            pass
-        
-
-# Instantiate DC motors
-lift = dc_motor("DC4") # using encoder for spacific position of lift functions
-Shooter_feed = dc_motor("DC3")
-Vertical_intake = dc_motor("DC2")
-Front_intake = dc_motor("DC1")
-bl_1 = brushless_motor("BL1")
-bl_2 = brushless_motor("BL2")
-shooter = smartservo_class("M1", "INDEX1") # only for angles
 
 
+# Main loop
 while True:
     if power_manage_module.is_auto_mode():
         pass
     else:
-        runtime.move_1() 
         if gamepad.is_key_pressed("L2") and gamepad.is_key_pressed("R2"):
-            runtime.change_mode()
+            Runtime.change_mode()
         else:
-            if runtime.CTRL_MODE == 0:
-                shoot_mode.control_button()
+            if Runtime.CTRL_MODE == 0:
+                ShootMode.control_button()
+                Runtime.move_1()
             else:
-                gripper_mode.control_button()
+                GripperMode.control_button()
+                Runtime.move_2()
