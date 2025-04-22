@@ -88,10 +88,10 @@ class holonomic:
 
     # motor tune
     tune = {
-        "fl": 1.5,
-        "fr": 1.5,
-        "bl": 1.5,
-        "br": 1.5,
+        "fl": 0.1,
+        "fr": 0.1,
+        "bl": 0.1,
+        "br": 0.1,
     }
 
     def drive(vx, vy, wL, deadzone=25, pid=False):
@@ -163,34 +163,7 @@ class Auto:
         pass
     
     def left():
-        entrance_feed.set_reverse(True)
-        entrance_feed.on(100)
-        feeder.set_reverse(False)
-        feeder.on(25)
-        front_input.set_reverse(True)
-        front_input.on(60)
-        holonomic.move_forward(50) #move forward 
-        time.sleep(2.51)
-        motors.stop()
-        holonomic.turn_left(60) #turn around
-        time.sleep(1.93)
-        motors.stop()
-        holonomic.slide_left(45) #slide for discs
-        time.sleep(2)
-        motors.stop()
-        holonomic.move_forward(25) #move to take discs
-        time.sleep(3.6)
-        motors.stop()
-        holonomic.slide_left(45)
-        time.sleep(1.2)
-        motors.stop()
-        holonomic.turn_right(60)
-        time.sleep(1.92)
-        motors.stop()
-        holonomic.move_forward(25)
-        time.sleep(2)
-        motors.stop()
-        time.sleep(500000)
+        pass
 
 class dc_motor:
     # Default DC port
@@ -316,14 +289,19 @@ class gripper_mode:
         
 
 # Instantiate DC motors
-lift = dc_motor("DC5")
-gripper1 = dc_motor("DC8")
+#feeder and entrance_feed
 entrance_feed = dc_motor("DC1")
 feeder = dc_motor("DC2")
+front_input = dc_motor("DC3")
+#lift and gripper
+lift = dc_motor("DC7")
+gripper1 = dc_motor("DC8")
+#shooting
 bl_1 = brushless_motor("BL1")
 bl_2 = brushless_motor("BL2")
+#shooting angle
 shooter = smartservo_class("M1", "INDEX1") # only for angles
-front_input = dc_motor("DC4")
+
 
 while True:
     # cooling.set_reverse(True)
