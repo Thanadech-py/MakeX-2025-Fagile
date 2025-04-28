@@ -11,15 +11,20 @@ from mbuild.ranging_sensor import ranging_sensor_class
 from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
 
+# Motor instances
 left_forward_wheel = encoder_motor_class("M2", "INDEX1")
 right_forward_wheel = encoder_motor_class("M3", "INDEX1")
 left_back_wheel = encoder_motor_class("M5", "INDEX1")
 right_back_wheel = encoder_motor_class("M6", "INDEX1")
 
+# Constants
 MAX_SPEED = 255
 SPEED_MULTIPLIER = 2.1
 PID_SPEED_MULTIPLIER = 2.1
 BL_POWER = 80
+
+# Timer for dt calculation
+_last_time = time.time()
 
 class PID:
     def __init__(self, Kp, Ki, Kd, setpoint=0):
@@ -29,168 +34,165 @@ class PID:
         self.setpoint = setpoint
         self.integral = 0
         self.prev_error = 0
-    
-    def compute(self, measured_value, dt):
-        # Calculate the error
-        error = self.setpoint - measured_value
-        
-        # Integral term
-        self.integral += error * dt
-        
-        # Derivative term
-        derivative = (error - self.prev_error) / dt if dt > 0 else 0
-        
-        # PID terms
-        P = self.Kp * error
-        I = self.Ki * self.integral
-        D = self.Kd * derivative
 
-        # Save the previous error for next iteration
+    def compute(self, measured_value, dt):
+        error = self.setpoint - measured_value
+        self.integral += error * dt
+        derivative = (error - self.prev_error) / dt if dt > 0 else 0
+
+        output = (self.Kp * error) + (self.Ki * self.integral) + (self.Kd * derivative)
         self.prev_error = error
-        
-        # Return the output (adjusted speed)
-        return P + I + D
+
+        return output
 
     def set_setpoint(self, setpoint):
         self.setpoint = setpoint
         self.integral = 0
         self.prev_error = 0
 
-class motors:
-    
+class Motors:
+    @staticmethod
     def drive(lf: int, lb: int, rf: int, rb: int):
-        # Setting motor speed based on calculated PID output
-        left_back_wheel.set_speed(lb)        # LEFT back 
-        right_back_wheel.set_speed(-rb)      # RIGHT BACK  
-        right_forward_wheel.set_speed(-(rf)) # RIGHT FORWARD
-        left_forward_wheel.set_speed(lf)     # LEFT BACK
-    
-    def stop():
-        motors.drive(0, 0, 0, 0)
+        left_back_wheel.set_speed(lb)
+        right_back_wheel.set_speed(-rb)
+        right_forward_wheel.set_speed(-rf)
+        left_forward_wheel.set_speed(lf)
 
-class util:
+    @staticmethod
+    def stop():
+        Motors.drive(0, 0, 0, 0)
+
+class Util:
+    @staticmethod
     def restrict(val, minimum, maximum):
         return max(min(val, maximum), minimum)
 
-class holonomic:    
-
+class Holonomic:
     pids = {
         "lf": PID(Kp=1, Ki=0, Kd=0),
         "lb": PID(Kp=1, Ki=0, Kd=0),
         "rf": PID(Kp=0.9, Ki=0, Kd=0),
         "rb": PID(Kp=0.9, Ki=0, Kd=0),
     }
-    
+
+    @staticmethod
     def drive(vx, vy, wL, deadzone=10, pid=True):
-        global SPEED_MULTIPLIER, PID_SPEED_MULTIPLIER
-        if math.fabs(vx) < math.fabs(deadzone):
+        global _last_time
+
+        now = time.time()
+        dt = now - _last_time
+        _last_time = now
+
+        if abs(vx) < deadzone:
             vx = 0
-        if math.fabs(vy) < math.fabs(deadzone):
+        if abs(vy) < deadzone:
             vy = 0
-        if math.fabs(wL) < math.fabs(deadzone):
+        if abs(wL) < deadzone:
             wL = 0
 
-        # Ensure the correct speed multiplier
         multiplier = PID_SPEED_MULTIPLIER if pid else SPEED_MULTIPLIER
-            
-        # Calculation for the wheel speed (Desired speed for each wheel)
+
         vFL = (vx + (vy * 1.2) + wL) * multiplier
         vFR = (-(vx) + (vy * 1.2) - wL) * multiplier
         vBL = (-(vx) + (vy * 1.2) + wL) * multiplier
         vBR = (vx + (vy * 1.2) - wL) * multiplier
-        
-        if pid:            
-            vFL = holonomic.pids["lf"].compute(-left_forward_wheel.get_value("speed"), dt)
-            vBL = holonomic.pids["lb"].compute(-left_back_wheel.get_value("speed"), dt)
-            vFR = holonomic.pids["rf"].compute(right_forward_wheel.get_value("speed"), dt)
-            vBR = holonomic.pids["rb"].compute(right_back_wheel.get_value("speed"), dt)
 
-        # Restrict values to max speed
-        vFL = util.restrict(vFL, -MAX_SPEED, MAX_SPEED)
-        vFR = util.restrict(vFR, -MAX_SPEED, MAX_SPEED)
-        vBL = util.restrict(vBL, -MAX_SPEED, MAX_SPEED)
-        vBR = util.restrict(vBR, -MAX_SPEED, MAX_SPEED)
+        if pid:
+            vFL = Holonomic.pids["lf"].compute(-left_forward_wheel.get_value("speed"), dt)
+            vBL = Holonomic.pids["lb"].compute(-left_back_wheel.get_value("speed"), dt)
+            vFR = Holonomic.pids["rf"].compute(right_forward_wheel.get_value("speed"), dt)
+            vBR = Holonomic.pids["rb"].compute(right_back_wheel.get_value("speed"), dt)
 
-        # Send the calculated speed values to the motors
-        motors.drive(vFL, vBL, vFR, vBR)
-        
+        vFL = Util.restrict(vFL, -MAX_SPEED, MAX_SPEED)
+        vFR = Util.restrict(vFR, -MAX_SPEED, MAX_SPEED)
+        vBL = Util.restrict(vBL, -MAX_SPEED, MAX_SPEED)
+        vBR = Util.restrict(vBR, -MAX_SPEED, MAX_SPEED)
+
+        Motors.drive(vFL, vBL, vFR, vBR)
+
+    @staticmethod
     def move_forward(power):
-        holonomic.drive(0, power, 0)
-        
+        Holonomic.drive(0, power, 0)
+
+    @staticmethod
     def move_backward(power):
-        holonomic.drive(0, -power, 0)
-        
+        Holonomic.drive(0, -power, 0)
+
+    @staticmethod
     def slide_right(power):
-        holonomic.drive(power, 0, 0)
-        
+        Holonomic.drive(power, 0, 0)
+
+    @staticmethod
     def slide_left(power):
-        holonomic.drive(-power, 0, 0)
-        
+        Holonomic.drive(-power, 0, 0)
+
+    @staticmethod
     def turn_right(power):
-        holonomic.drive(0, 0, power)
-        
+        Holonomic.drive(0, 0, power)
+
+    @staticmethod
     def turn_left(power):
-        holonomic.drive(0, 0, -power)
-        
-class Auto():
+        Holonomic.drive(0, 0, -power)
+
+class Auto:
+    @staticmethod
     def right():
         pass
+
+    @staticmethod
     def left():
-        pass  
-    
-class Motors:
-    # Default DC port
-    DC_port = "DC1"
-    BL_port = "BL1"
-    
-    # Initialize DC motor with a specific port
+        pass
+
+class PowerMotor:
     def __init__(self, port: str) -> None:
         self.DC_port = port
-        self.BL_port = port 
-        
-    # Method to turn on the DC Motor
+        self.BL_port = port
+        self.reverse = False
+
     def onDC(self, Power: int) -> None:
         power = -Power if self.reverse else Power
-        power_expand_board.set_power(self.dc_port, power)
-    # Method to turn on Blushless Motor
+        power_expand_board.set_power(self.DC_port, power)
+
     def onBL(self) -> None:
-        power_expand_board.set_power(self.BL_port, BL_POWER)        
-    # Method to turn off the DC Motor
+        power_expand_board.set_power(self.BL_port, BL_POWER)
+
     def offDC(self) -> None:
         power_expand_board.stop(self.DC_port)
-    
-    #Method to turn off Blushless Motor
+
     def offBL(self) -> None:
         power_expand_board.stop(self.BL_port)
-        
+
 class Mode:
     CTRL_MODE = 0
-    
     ENABLE = True
+
+    @staticmethod
     def move_1():
-        if math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Rx")) > 20:
-            holonomic.drive(-gamepad.get_joystick("Lx"), gamepad.get_joystick("Ly"), -gamepad.get_joystick("Rx"), pid=True)
+        if abs(gamepad.get_joystick("Lx")) > 20 or abs(gamepad.get_joystick("Ly")) > 20 or abs(gamepad.get_joystick("Rx")) > 20:
+            Holonomic.drive(-gamepad.get_joystick("Lx"), gamepad.get_joystick("Ly"), -gamepad.get_joystick("Rx"), pid=True)
         else:
-            motors.drive(0,0,0,0)
-            
+            Motors.stop()
+
+    @staticmethod
     def move_2():
-        if math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Rx")) > 20:
-            holonomic.drive(gamepad.get_joystick("Lx"), -gamepad.get_joystick("Ly"), -gamepad.get_joystick("Rx"), pid=True)
+        if abs(gamepad.get_joystick("Lx")) > 20 or abs(gamepad.get_joystick("Ly")) > 20 or abs(gamepad.get_joystick("Rx")) > 20:
+            Holonomic.drive(gamepad.get_joystick("Lx"), -gamepad.get_joystick("Ly"), -gamepad.get_joystick("Rx"), pid=True)
         else:
-            motors.drive(0,0,0,0)
-            
+            Motors.stop()
+
+    @staticmethod
     def change_mode():
         if novapi.timer() > 0.9:
-            if runtime.CTRL_MODE == 0:
-                runtime.CTRL_MODE = 1
+            if Mode.CTRL_MODE == 0:
+                Mode.CTRL_MODE = 1
             else:
-                runtime.CTRL_MODE = 0
+                Mode.CTRL_MODE = 0
             novapi.reset_timer()
-        
-    
+
+# Main loop
 while True:
     if power_manage_module.is_auto_mode():
-        pass
+        pass  # Auto mode logic can be added here
     else:
         if gamepad.is_key_pressed("L2") and gamepad.is_key_pressed("R2"):
             Mode.change_mode()
