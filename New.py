@@ -59,7 +59,7 @@ class motors:
     def drive(lf: int, lb: int, rf: int, rb: int):
         left_forward_wheel.set_speed(lf)             # LEFT FORWARD
         left_back_wheel.set_speed(lb) # left back :DDDDD
-        right_forward_wheel.set_speed(-(rf))      # RIGHT FORWARD
+        right_forward_wheel.set_speed(-rf)      # RIGHT FORWARD
         right_back_wheel.set_speed(-rb)  # RIGHT BACK  
    
     def stop():
@@ -89,9 +89,9 @@ class holonomic:
         multiplier = 2 # SPEED MULTIPLIER
         
         self.pid["vx"].set_setpoint(vx)
-        vx = vx * self.pid["vx"].update(novapi.get_acceleration("X"))
-        self.pid["vx"].set_setpoint(vy)
-        vy = vy * self.pid["vy"].update(novapi.get_acceleration("Z"))
+        vx = 5 * self.pid["vx"].update(novapi.get_acceleration("X"))
+        self.pid["vy"].set_setpoint(vy)
+        vy = 5 * self.pid["vy"].update(novapi.get_acceleration("Z"))
 
         # Calculation for the wheel speed
         # Visit https://github.com/neumann-lab/holonomic-mecanum/blob/main/th.md for the formula
@@ -158,13 +158,13 @@ class runtime:
     ENABLED = True
     def move_1():
         if math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Rx")) > 20:
-            robot_holonomic.drive(-gamepad.get_joystick("Lx"), gamepad.get_joystick("Ly"), -(1.2 * gamepad.get_joystick("Rx")))
+            robot_holonomic.drive((-gamepad.get_joystick("Lx")), (gamepad.get_joystick("Ly")), -(1.2 * gamepad.get_joystick("Rx")))
         else:
             motors.drive(0,0,0,0)
 
     def move_2():
-        if math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Rx")) > 20:
-            robot_holonomic.drive(-gamepad.get_joystick("Lx"), -gamepad.get_joystick("Ly"), (1.2 * gamepad.get_joystick("Rx")))
+        if math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ry")) > 20:
+            robot_holonomic.drive((-gamepad.get_joystick("Ly")), (gamepad.get_joystick("Lx")), -(1.2 * gamepad.get_joystick("Ry")))
         else:
             motors.drive(0,0,0,0)
     def change_mode():
@@ -180,18 +180,18 @@ class shoot_mode:
     def control_button():
         if gamepad.is_key_pressed("N2"):
             entrance_feed.set_reverse(True)
-            entrance_feed.on(55)
+            entrance_feed.on(60)
             feeder.set_reverse(False)
-            feeder.on(55)
+            feeder.on(60)
             front_input.set_reverse(True)
-            front_input.on(55)
+            front_input.on(60)
         elif gamepad.is_key_pressed("N3"):
             entrance_feed.set_reverse(False)
-            entrance_feed.on(55)
+            entrance_feed.on(60)
             feeder.set_reverse(True)
-            feeder.on(55)
+            feeder.on(60)
             front_input.set_reverse(False)
-            front_input.on(55)
+            front_input.on(60)
         else:
             entrance_feed.off()
             feeder.off()
@@ -214,11 +214,13 @@ class gripper_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
         if gamepad.is_key_pressed("Up"):
-            lift.set_power(-90)
+            lift.set_reverse(True)
+            lift.on(100)
         elif gamepad.is_key_pressed("Down"):
-            lift.set_power(90)
+            lift.set_reverse(False)
+            lift.on(100)
         else:
-            lift.set_speed(0)
+            lift.off()
         if gamepad.is_key_pressed("N1"):
             gripper1.set_reverse(True)
             gripper1.on(100)
