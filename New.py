@@ -9,10 +9,10 @@ from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
 import time
 
-left_forward_wheel = encoder_motor_class("M5", "INDEX1")
-right_forward_wheel = encoder_motor_class("M2", "INDEX1")
-left_back_wheel = encoder_motor_class("M4", "INDEX1")
-right_back_wheel = encoder_motor_class("M3", "INDEX1")
+left_forward_wheel = encoder_motor_class("M2", "INDEX1")
+right_forward_wheel = encoder_motor_class("M6", "INDEX1")
+left_back_wheel = encoder_motor_class("M3", "INDEX1")
+right_back_wheel = encoder_motor_class("M4", "INDEX1")
 
 MAX_SPEED = 255
 BL_POWER = 70
@@ -55,30 +55,30 @@ class PID:
         self.previous_error = 0  # Reset previous error to avoid a large derivative spike
         
 class motors:
-    
+    @staticmethod
     def drive(lf: int, lb: int, rf: int, rb: int):
-        left_forward_wheel.set_speed(lf)             # LEFT FORWARD
-        left_back_wheel.set_speed(lb) # left back :DDDDD
-        right_forward_wheel.set_speed(-rf)      # RIGHT FORWARD
-        right_back_wheel.set_speed(-rb)  # RIGHT BACK  
-   
+        left_forward_wheel.set_speed(lf)
+        left_back_wheel.set_speed(lb)
+        right_forward_wheel.set_speed(-rf)
+        right_back_wheel.set_speed(-rb)
+
+    @staticmethod
     def stop():
         motors.drive(0, 0, 0, 0)
-        
+
 class util:
+    @staticmethod
     def restrict(val, minimum, maximum):
         return max(min(val, maximum), minimum)
     
 class holonomic:    
-    
     pid = {
-        "vx": PID(0.5, 0.1, 0.1),
-        "vy": PID(0.5, 0.1, 0.1)
+        "vx": PID(0.1, 0, 0),
+        "vy": PID(0.7, 0.15, 0.079) 
     }
 
-    def drive(self, vx, vy, wL, deadzone=5):
-        # Create a deadzone so that if the joystick isn't moved perfectly,
-        # the controller can still make the robot move perfectly.
+    @staticmethod
+    def drive(vx, vy, wL, deadzone=5):
         if math.fabs(vx) < math.fabs(deadzone):
             vx = 0
         if math.fabs(vy) < math.fabs(deadzone):
@@ -86,27 +86,48 @@ class holonomic:
         if math.fabs(wL) < math.fabs(deadzone):
             wL = 0
             
-        multiplier = 2 # SPEED MULTIPLIER
+        multiplier = 2
         
-        self.pid["vx"].set_setpoint(vx)
-        vx = 5 * self.pid["vx"].update(novapi.get_acceleration("X"))
-        self.pid["vy"].set_setpoint(vy)
-        vy = 5 * self.pid["vy"].update(novapi.get_acceleration("Z"))
+        holonomic.pid["vx"].set_setpoint(vx)
+        vx = 5 * holonomic.pid["vx"].update(novapi.get_acceleration("X"))
+        holonomic.pid["vy"].set_setpoint(vy)
+        vy = 5 * holonomic.pid["vy"].update(novapi.get_acceleration("Z"))
 
-        # Calculation for the wheel speed
-        # Visit https://github.com/neumann-lab/holonomic-mecanum/blob/main/th.md for the formula
         vFL = (vx + vy + wL) * multiplier
         vFR = (-vx + vy - wL) * multiplier
         vBL = (-vx + vy + wL) * multiplier
         vBR = (vx + vy - wL) * multiplier
 
-        # Velocity
         vFL = util.restrict(vFL, -MAX_SPEED, MAX_SPEED)
         vFR = util.restrict(vFR, -MAX_SPEED, MAX_SPEED)
         vBL = util.restrict(vBL, -MAX_SPEED, MAX_SPEED)
         vBR = util.restrict(vBR, -MAX_SPEED, MAX_SPEED)
-        # Drive motor
+
         motors.drive(vFL, vBL, vFR, vBR)
+
+    @staticmethod
+    def move_forward(power):
+        holonomic.drive(0, power, 0)
+
+    @staticmethod
+    def move_backward(power):
+        holonomic.drive(0, -power, 0)
+
+    @staticmethod
+    def slide_right(power):
+        holonomic.drive(power, 0, 0)
+
+    @staticmethod
+    def slide_left(power):
+        holonomic.drive(-power, 0, 0)
+
+    @staticmethod
+    def turn_right(power):
+        holonomic.drive(0, 0, power)
+
+    @staticmethod
+    def turn_left(power):
+        holonomic.drive(0, 0, -power)
 
 class dc_motor:
     # Default DC port
@@ -146,8 +167,6 @@ class brushless_motor:
     # Method to turn off the brushless motor
     def off(self) -> None:
         power_expand_board.stop(self.bl_port)
-
-robot_holonomic = holonomic()
       
 
 class runtime:
@@ -157,16 +176,33 @@ class runtime:
     # Robot state
     ENABLED = True
     def move_1():
-        if math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Rx")) > 20:
-            robot_holonomic.drive((-gamepad.get_joystick("Lx")), (gamepad.get_joystick("Ly")), -(1.2 * gamepad.get_joystick("Rx")))
-        else:
-            motors.drive(0,0,0,0)
+        if gamepad.is_key_pressed("Up"):
+            holonomic.move_forward(MAX_SPEED)
+        elif gamepad.is_key_pressed("Down"):
+            holonomic.move_backward(MAX_SPEED)
+        elif gamepad.is_key_pressed("Left"):
+            holonomic.turn_left(MAX_SPEED)
+        elif gamepad.is_key_pressed("Right"):
+            holonomic.turn_right(MAX_SPEED)
+        elif abs(gamepad.get_joystick("Lx")) > 20:
+            holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
+        else :
+            holonomic.drive(0,0,0,0)
 
     def move_2():
-        if math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ry")) > 20:
-            robot_holonomic.drive((-gamepad.get_joystick("Ly")), (gamepad.get_joystick("Lx")), -(1.2 * gamepad.get_joystick("Ry")))
-        else:
-            motors.drive(0,0,0,0)
+        if gamepad.is_key_pressed("Up"):
+            holonomic.slide_right(MAX_SPEED)
+        elif gamepad.is_key_pressed("Down"):
+            holonomic.slide_left(MAX_SPEED)
+        elif gamepad.is_key_pressed("Left"):
+            holonomic.turn_left(MAX_SPEED)
+        elif gamepad.is_key_pressed("Right"):
+            holonomic.turn_right(MAX_SPEED)
+        elif abs(gamepad.get_joystick("Lx")) > 20:
+            holonomic.drive(0, gamepad.get_joystick("Lx"), 0)
+        else :
+            holonomic.drive(0,0,0,0)
+
     def change_mode():
         if novapi.timer() > 0.9:
             if runtime.CTRL_MODE == 0:
@@ -178,14 +214,14 @@ class runtime:
 class shoot_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
-        if gamepad.is_key_pressed("N2"):
+        if gamepad.get_joystick("Ly") > 40:
             entrance_feed.set_reverse(True)
             entrance_feed.on(60)
             feeder.set_reverse(False)
             feeder.on(60)
             front_input.set_reverse(True)
             front_input.on(60)
-        elif gamepad.is_key_pressed("N3"):
+        elif gamepad.get_joystick("Ly") < -40:
             entrance_feed.set_reverse(False)
             entrance_feed.on(60)
             feeder.set_reverse(True)
@@ -203,12 +239,7 @@ class shoot_mode:
             bl_1.off()
             bl_2.off()
         #shooter_angle control
-        if gamepad.is_key_pressed("Up"):
-            shooter.move(8, 10)
-        elif gamepad.is_key_pressed("Down"):
-            shooter.move(-8, 10)
-        else:
-            pass
+        shooter.move(gamepad.get_joystick("Ry"),10)
  
 class gripper_mode:
     # Method to control various robot functions based on button inputs
@@ -243,7 +274,7 @@ gripper1 = dc_motor("DC8")
 bl_1 = brushless_motor("BL1")
 bl_2 = brushless_motor("BL2")
 #shooting angle
-shooter = smartservo_class("M1", "INDEX1") # only for angles
+shooter = smartservo_class("M5", "INDEX1") # only for angles
 
 while True:
     if power_manage_module.is_auto_mode():
