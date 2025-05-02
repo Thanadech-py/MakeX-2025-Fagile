@@ -1,6 +1,5 @@
 # Import necessary modules
 import novapi
-import time
 import math
 from mbuild.encoder_motor import encoder_motor_class
 from mbuild import power_expand_board
@@ -70,11 +69,28 @@ class util:
     @staticmethod
     def restrict(val, minimum, maximum):
         return max(min(val, maximum), minimum)
+        
+class sensor:
+    acc_x_vals = []
+    acc_z_vals = []
+
+    @staticmethod
+    def filtered_acc(axis: str, size: int = 5):
+        if axis == "X":
+            sensor.acc_x_vals.append(novapi.get_acceleration("X"))
+            if len(sensor.acc_x_vals) > size:
+                sensor.acc_x_vals.pop(0)
+            return sum(sensor.acc_x_vals) / len(sensor.acc_x_vals)
+        elif axis == "Z":
+            sensor.acc_z_vals.append(novapi.get_acceleration("Z"))
+            if len(sensor.acc_z_vals) > size:
+                sensor.acc_z_vals.pop(0)
+            return sum(sensor.acc_z_vals) / len(sensor.acc_z_vals)
     
 class holonomic:    
     pid = {
-        "vx": PID(0.1, 0, 0),
-        "vy": PID(0.7, 0.15, 0.079) 
+        "vx": PID(0.1021, 0.07, 0.03211),
+        "vy": PID(0.15, 0.05, 0.02)
     }
 
     @staticmethod
@@ -89,9 +105,9 @@ class holonomic:
         multiplier = 2
         
         holonomic.pid["vx"].set_setpoint(vx)
-        vx = 5 * holonomic.pid["vx"].update(novapi.get_acceleration("X"))
+        vx = 5 * holonomic.pid["vx"].update(sensor.filtered_acc("Z"))
         holonomic.pid["vy"].set_setpoint(vy)
-        vy = 5 * holonomic.pid["vy"].update(novapi.get_acceleration("Z"))
+        vy = 5 * holonomic.pid["vy"].update(sensor.filtered_acc("X"))
 
         vFL = (vx + vy + wL) * multiplier
         vFR = (-vx + vy - wL) * multiplier
@@ -244,11 +260,11 @@ class shoot_mode:
 class gripper_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
-        if gamepad.is_key_pressed("Up"):
-            lift.set_reverse(True)
-            lift.on(100)
-        elif gamepad.is_key_pressed("Down"):
+        if gamepad.is_key_pressed("N2"):
             lift.set_reverse(False)
+            lift.on(100)
+        elif gamepad.is_key_pressed("N3"):
+            lift.set_reverse(True)
             lift.on(100)
         else:
             lift.off()
