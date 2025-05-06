@@ -230,14 +230,14 @@ class runtime:
 class shoot_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
-        if gamepad.get_joystick("Ly") > 40:
+        if gamepad.get_joystick("Ry") > 40:
             entrance_feed.set_reverse(True)
             entrance_feed.on(60)
             feeder.set_reverse(False)
             feeder.on(60)
             front_input.set_reverse(True)
             front_input.on(60)
-        elif gamepad.get_joystick("Ly") < -40:
+        elif gamepad.get_joystick("Ry") < -40:
             entrance_feed.set_reverse(False)
             entrance_feed.on(60)
             feeder.set_reverse(True)
@@ -255,7 +255,7 @@ class shoot_mode:
             bl_1.off()
             bl_2.off()
         #shooter_angle control
-        shooter.move(gamepad.get_joystick("Ry"),10)
+        shooter.move(-gamepad.get_joystick("Ly"),10)
  
 class gripper_mode:
     # Method to control various robot functions based on button inputs
