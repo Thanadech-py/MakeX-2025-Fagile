@@ -15,6 +15,11 @@ right_back_wheel = encoder_motor_class("M4", "INDEX1")
 MAX_SPEED = 255
 BL_POWER = 70
 
+MAX_ANGLE = -62
+MIN_ANGLE = 24
+
+ANGLE = 0
+
 
 class PID:
     def __init__(self, Kp, Ki, Kd, setpoint=0):
@@ -257,16 +262,32 @@ class shoot_mode:
             bl_1.off()
             bl_2.off()
         #shooter_angle control
+        # if gamepad.is_key_pressed("N2"):
+        #     shooter.move(-5,10)
+        # elif gamepad.is_key_pressed("N3"):
+        #     shooter.move(5,10)
+        # elif shooter.get_value("angle") < -62:
+        #     shooter.move_to(-62,10)
+        # elif shooter.get_value("angle") > 24:
+        #     shooter.move_to(24,-10)
+        # else:
+        #     shooter.move(0,10)
+
+        global ANGLE
+        global MAX_ANGLE
+        global MIN_ANGLE
+
         if gamepad.is_key_pressed("N2"):
-            shooter.move(-5,10)
+            ANGLE = ANGLE - 5
         elif gamepad.is_key_pressed("N3"):
-            shooter.move(5,10)
-        elif shooter.get_value("angle") < -62:
-            shooter.move_to(-62,10)
-        elif shooter.get_value("angle") > 24:
-            shooter.move_to(24,-10)
-        else:
-            shooter.move(0,10)
+            ANGLE = ANGLE + 5
+        
+        if ANGLE > MIN_ANGLE:
+            ANGLE = MIN_ANGLE
+        elif ANGLE < MAX_ANGLE:
+            ANGLE = MAX_ANGLE
+        shooter.move(ANGLE, 10)
+            
 
     
  
