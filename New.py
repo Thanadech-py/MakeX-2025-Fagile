@@ -6,7 +6,6 @@ from mbuild import power_expand_board
 from mbuild import gamepad
 from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
-import time
 
 left_forward_wheel = encoder_motor_class("M2", "INDEX1")
 right_forward_wheel = encoder_motor_class("M6", "INDEX1")
@@ -15,6 +14,7 @@ right_back_wheel = encoder_motor_class("M4", "INDEX1")
 
 MAX_SPEED = 255
 BL_POWER = 70
+
 
 class PID:
     def __init__(self, Kp, Ki, Kd, setpoint=0):
@@ -202,9 +202,8 @@ class runtime:
             holonomic.turn_right(MAX_SPEED)
         elif abs(gamepad.get_joystick("Lx")) > 20:
             holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
-        else :
-            holonomic.drive(0,0,0,0)
-
+        else:
+            motors.drive(0,0,0,0)
     def move_2():
         if gamepad.is_key_pressed("Up"):
             holonomic.slide_right(MAX_SPEED)
@@ -230,20 +229,23 @@ class runtime:
 class shoot_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
+
+        # shooter.move_to(0,10)
+
         if gamepad.get_joystick("Ry") > 40:
             entrance_feed.set_reverse(True)
-            entrance_feed.on(60)
+            entrance_feed.on(100)
             feeder.set_reverse(False)
-            feeder.on(60)
+            feeder.on(100)
             front_input.set_reverse(True)
-            front_input.on(60)
+            front_input.on(100)
         elif gamepad.get_joystick("Ry") < -40:
             entrance_feed.set_reverse(False)
-            entrance_feed.on(60)
+            entrance_feed.on(100)
             feeder.set_reverse(True)
-            feeder.on(60)
+            feeder.on(100)
             front_input.set_reverse(False)
-            front_input.on(60)
+            front_input.on(100)
         else:
             entrance_feed.off()
             feeder.off()
@@ -255,7 +257,18 @@ class shoot_mode:
             bl_1.off()
             bl_2.off()
         #shooter_angle control
-        shooter.move(-gamepad.get_joystick("Ly"),10)
+        if gamepad.is_key_pressed("N2"):
+            shooter.move(-5,10)
+        elif gamepad.is_key_pressed("N3"):
+            shooter.move(5,10)
+        elif shooter.get_value("angle") < -62:
+            shooter.move_to(-62,10)
+        elif shooter.get_value("angle") > 24:
+            shooter.move_to(24,-10)
+        else:
+            shooter.move(0,10)
+
+    
  
 class gripper_mode:
     # Method to control various robot functions based on button inputs
@@ -293,6 +306,11 @@ bl_2 = brushless_motor("BL2")
 shooter = smartservo_class("M5", "INDEX1") # only for angles
 
 while True:
+    angle = shooter.get_value("angle")
+    print("position: ", angle)
+
+
+
     if power_manage_module.is_auto_mode():
         pass
     else:
