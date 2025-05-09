@@ -273,14 +273,12 @@ class shoot_mode:
         # else:
         #     shooter.move(0,10)
 
-        global ANGLE
-        global MAX_ANGLE
-        global MIN_ANGLE
-
         if gamepad.is_key_pressed("N2"):
-            ANGLE = ANGLE - 5
+            ANGLE = 5
         elif gamepad.is_key_pressed("N3"):
-            ANGLE = ANGLE + 5
+            ANGLE = -5
+        else:
+            ANGLE = 0
         
         if ANGLE > MIN_ANGLE:
             ANGLE = MIN_ANGLE
