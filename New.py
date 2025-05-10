@@ -262,16 +262,7 @@ class shoot_mode:
             bl_1.off()
             bl_2.off()
         #shooter_angle control
-        # if gamepad.is_key_pressed("N2"):
-        #     shooter.move(-5,10)
-        # elif gamepad.is_key_pressed("N3"):
-        #     shooter.move(5,10)
-        # elif shooter.get_value("angle") < -62:
-        #     shooter.move_to(-62,10)
-        # elif shooter.get_value("angle") > 24:
-        #     shooter.move_to(24,-10)
-        # else:
-        #     shooter.move(0,10)
+
 
         if gamepad.is_key_pressed("N2"):
             ANGLE = 5
