@@ -150,6 +150,81 @@ class holonomic:
     def turn_left(power):
         holonomic.drive(0, 0, -power)
 
+class localization:
+    # Robot state
+    x = 0.0
+    y = 0.0
+    theta = 0.0
+
+    # Timing
+    last_time = novapi.timer()
+
+    # Robot physical dimensions (adjust to your robot)
+    wheel_radius = 0.04  # meters
+    wheel_base = 0.18    # front-back wheel distance
+    track_width = 0.15   # left-right wheel distance
+
+    @staticmethod
+    def clamp(val, min_val, max_val):
+        return max(min(val, max_val), min_val)
+
+    @staticmethod
+    def get_linear_speed(motor):
+        try:
+            rpm = motor.get_speed()
+            rpm = localization.clamp(rpm, -500, 500)  # reasonable range
+            return (2 * math.pi * localization.wheel_radius * rpm) / 60
+        except Exception as e:
+            print("Speed read error:", e)
+            return 0.0
+
+    @staticmethod
+    def update():
+        current_time = novapi.timer()
+        dt = current_time - localization.last_time
+        if dt <= 0 or dt > 1:  # Skip if timer is invalid or large delay
+            localization.last_time = current_time
+            return
+
+        localization.last_time = current_time
+
+        try:
+            imu_z = novapi.get_gyroscope("Z")
+            imu_z = localization.clamp(imu_z, -500, 500)  # deg/sec clamp
+        except Exception as e:
+            print("Gyro read error:", e)
+            imu_z = 0
+
+        dtheta = math.radians(imu_z) * dt
+        localization.theta += dtheta
+
+        # Get speeds
+        vFL = localization.get_linear_speed(left_forward_wheel)
+        vFR = localization.get_linear_speed(right_forward_wheel)
+        vBL = localization.get_linear_speed(left_back_wheel)
+        vBR = localization.get_linear_speed(right_back_wheel)
+
+        # Inverse kinematics for robot-frame velocities
+        vx = (vFL + vFR + vBL + vBR) / 4
+        vy = (-vFL + vFR + vBL - vBR) / 4
+        omega = (-vFL + vFR - vBL + vBR) / (4 * (localization.wheel_base + localization.track_width))
+
+        # Global frame transformation
+        cos_t = math.cos(localization.theta)
+        sin_t = math.sin(localization.theta)
+
+        global_vx = vx * cos_t - vy * sin_t
+        global_vy = vx * sin_t + vy * cos_t
+
+        localization.x += global_vx * dt
+        localization.y += global_vy * dt
+
+    @staticmethod
+    def get_position():
+        return localization.x, localization.y, math.degrees(localization.theta)
+
+
+
 class dc_motor:
     # Default DC port
     dc_port = "DC1"
@@ -234,23 +309,16 @@ class runtime:
 class shoot_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
-
-        # shooter.move_to(0,10)
-
         if gamepad.get_joystick("Ry") > 40:
-            entrance_feed.set_reverse(True)
-            entrance_feed.on(100)
-            feeder.set_reverse(False)
-            feeder.on(100)
-            front_input.set_reverse(True)
-            front_input.on(100)
-        elif gamepad.get_joystick("Ry") < -40:
             entrance_feed.set_reverse(False)
             entrance_feed.on(100)
             feeder.set_reverse(True)
             feeder.on(100)
-            front_input.set_reverse(False)
-            front_input.on(100)
+        elif gamepad.get_joystick("Ry") < -40:
+            entrance_feed.set_reverse(True)
+            entrance_feed.on(100)
+            feeder.set_reverse(False)
+            feeder.on(100)
         else:
             entrance_feed.off()
             feeder.off()
@@ -262,20 +330,7 @@ class shoot_mode:
             bl_1.off()
             bl_2.off()
         #shooter_angle control
-
-
-        if gamepad.is_key_pressed("N2"):
-            ANGLE = 5
-        elif gamepad.is_key_pressed("N3"):
-            ANGLE = -5
-        else:
-            ANGLE = 0
-        
-        if ANGLE > MIN_ANGLE:
-            ANGLE = MIN_ANGLE
-        elif ANGLE < MAX_ANGLE:
-            ANGLE = MAX_ANGLE
-        shooter.move(ANGLE, 10)
+        shooter.move_to(-gamepad.get_joystick("Ry") * 0.5, 10)
             
 
     
@@ -319,6 +374,9 @@ while True:
     angle = shooter.get_value("angle")
     print("position: ", angle)
 
+    localization.update()
+    x, y, theta = localization.get_position()
+    print("Position: X = {:.2f} m, Y = {:.2f} m, θ = {:.1f}°".format(x, y, theta))
 
 
     if power_manage_module.is_auto_mode():
