@@ -11,7 +11,7 @@ import time
 left_forward_wheel = encoder_motor_class("M2", "INDEX1")
 right_forward_wheel = encoder_motor_class("M6", "INDEX1")
 left_back_wheel = encoder_motor_class("M3", "INDEX1")
-right_back_wheel = encoder_motor_class("M4", "INDEX1")
+right_back_wheel = encoder_motor_class("M5", "INDEX1")
 
 MAX_SPEED = 255
 BL_POWER = 70
@@ -177,8 +177,11 @@ class brushless_motor:
         self.bl_port = port
         
     # Method to turn on the brushless motor
-    def on(self) -> None:
+    def on_max(self) -> None:
         power_expand_board.set_power(self.bl_port, BL_POWER)
+    
+    def on_half(self) -> None:
+        power_expand_board.set_power(self.bl_port, BL_POWER/2)
         
     # Method to turn off the brushless motor
     def off(self) -> None:
@@ -191,7 +194,7 @@ class runtime:
     
     # Robot state
     ENABLED = True
-    def move_1():
+    def move():
         if gamepad.is_key_pressed("Up"):
             holonomic.move_forward(MAX_SPEED)
         elif gamepad.is_key_pressed("Down"):
@@ -202,20 +205,6 @@ class runtime:
             holonomic.turn_right(MAX_SPEED)
         elif abs(gamepad.get_joystick("Lx")) > 20:
             holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
-        else :
-            holonomic.drive(0,0,0,0)
-
-    def move_2():
-        if gamepad.is_key_pressed("Up"):
-            holonomic.slide_right(MAX_SPEED)
-        elif gamepad.is_key_pressed("Down"):
-            holonomic.slide_left(MAX_SPEED)
-        elif gamepad.is_key_pressed("Left"):
-            holonomic.turn_left(MAX_SPEED)
-        elif gamepad.is_key_pressed("Right"):
-            holonomic.turn_right(MAX_SPEED)
-        elif abs(gamepad.get_joystick("Lx")) > 20:
-            holonomic.drive(0, gamepad.get_joystick("Lx"), 0)
         else :
             holonomic.drive(0,0,0,0)
 
@@ -230,33 +219,42 @@ class runtime:
 class shoot_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
-        if gamepad.get_joystick("Ly") > 40:
+        if gamepad.get_joystick("Ry") > 40:
             entrance_feed.set_reverse(True)
             entrance_feed.on(60)
             feeder.set_reverse(False)
             feeder.on(60)
             front_input.set_reverse(True)
-            front_input.on(60)
-        elif gamepad.get_joystick("Ly") < -40:
+            front_input.on(100)
+        elif gamepad.get_joystick("Ry") < -40:
             entrance_feed.set_reverse(False)
             entrance_feed.on(60)
             feeder.set_reverse(True)
             feeder.on(60)
             front_input.set_reverse(False)
-            front_input.on(60)
+            front_input.on(100)
         else:
             entrance_feed.off()
             feeder.off()
             front_input.off()
         if gamepad.is_key_pressed("R1"):
-            bl_1.on()
-            bl_2.on()
+            bl_1.on_max()
+            bl_2.on_max()
+        elif gamepad.is_key_pressed("L1"):
+            bl_1.on_half()
+            bl_2.on_half()
         else:
             bl_1.off()
             bl_2.off()
         #shooter_angle control
-        angle_left.move(gamepad.get_joystick("Ry"),10)
-        angle_right.move(-gamepad.get_joystick("Ry"),10)
+        if gamepad.is_key_pressed("N2"):
+            angle_left.move(-6, 10)
+            angle_right.move(6, 10)
+        elif gamepad.is_key_pressed("N3"):
+            angle_left.move(6,10)
+            angle_right.move(-6, 10)
+        else:
+            pass
  
 class gripper_mode:
     # Method to control various robot functions based on button inputs
@@ -269,6 +267,7 @@ class gripper_mode:
             lift.on(100)
         else:
             lift.off()
+
         if gamepad.is_key_pressed("N1"):
             gripper1.set_reverse(True)
             gripper1.on(100)
@@ -278,6 +277,15 @@ class gripper_mode:
             gripper1.on(100)
         else:
             gripper1.off()
+
+        if gamepad.is_key_pressed("R1"):
+            item_controller.set_reverse(True)
+            item_controller.on(50)
+        elif gamepad.is_key_pressed("L1"):
+            item_controller.set_reverse(False)
+            item_controller.on(50)
+        else:
+            item_controller.off()
         
 
 #Block and Cube Management System
@@ -285,25 +293,31 @@ entrance_feed = dc_motor("DC1")
 feeder = dc_motor("DC2")
 front_input = dc_motor("DC3")
 #lift and gripper
-lift = dc_motor("DC7")
-gripper1 = dc_motor("DC8")
+lift = dc_motor("DC6")
+gripper1 = dc_motor("DC7")
+item_controller = dc_motor("DC5")  # For block and cube management
 #shooting
 bl_1 = brushless_motor("BL1")
 bl_2 = brushless_motor("BL2")
 #shooting angle
-angle_left = smartservo_class("M5", "INDEX1")
-angle_right = smartservo_class("M5", "INDEX2") # only for angles
-
+angle_left = smartservo_class("M4", "INDEX1")
+angle_right = smartservo_class("M4", "INDEX2") # only for angles
+#utility
+Laser = dc_motor("DC8")
 while True:
     if power_manage_module.is_auto_mode():
         pass
     else:
-        if gamepad.is_key_pressed("L2") and gamepad.is_key_pressed("R2"):
+        runtime.move()
+        if gamepad.is_key_pressed("R2"):
             runtime.change_mode()
         else:
             if runtime.CTRL_MODE == 0:
                 shoot_mode.control_button()
-                runtime.move_1()
+                #Turn Laser on for shooting mode
+                Laser.set_reverse(True)
+                Laser.on(10)
             else:
                 gripper_mode.control_button()
-                runtime.move_2()
+                #Turn Laser off for gripper mode
+                Laser.off()
