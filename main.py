@@ -6,7 +6,7 @@ from mbuild import power_expand_board
 from mbuild import gamepad
 from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
-import time
+# import time
 
 left_forward_wheel = encoder_motor_class("M2", "INDEX1")
 right_forward_wheel = encoder_motor_class("M6", "INDEX1")
@@ -14,7 +14,8 @@ left_back_wheel = encoder_motor_class("M3", "INDEX1")
 right_back_wheel = encoder_motor_class("M5", "INDEX1")
 
 MAX_SPEED = 255
-BL_POWER = 70
+BL_POWER_MAX = 100
+BL_POWER_MIN = 75
 
 class PID:
     def __init__(self, Kp, Ki, Kd, setpoint=0):
@@ -72,7 +73,7 @@ class util:
         
 class sensor:
     acc_x_vals = []
-    acc_z_vals = []
+    acc_y_vals = []
 
     @staticmethod
     def filtered_acc(axis: str, size: int = 5):
@@ -81,11 +82,11 @@ class sensor:
             if len(sensor.acc_x_vals) > size:
                 sensor.acc_x_vals.pop(0)
             return sum(sensor.acc_x_vals) / len(sensor.acc_x_vals)
-        elif axis == "Z":
-            sensor.acc_z_vals.append(novapi.get_acceleration("Z"))
-            if len(sensor.acc_z_vals) > size:
-                sensor.acc_z_vals.pop(0)
-            return sum(sensor.acc_z_vals) / len(sensor.acc_z_vals)
+        elif axis == "Y":
+            sensor.acc_y_vals.append(novapi.get_acceleration("Y"))
+            if len(sensor.acc__y_vals) > size:
+                sensor.acc_y_vals.pop(0)
+            return sum(sensor.acc_y_vals) / len(sensor.acc_y_vals)
     
 class holonomic:    
     pid = {
@@ -178,10 +179,10 @@ class brushless_motor:
         
     # Method to turn on the brushless motor
     def on_max(self) -> None:
-        power_expand_board.set_power(self.bl_port, BL_POWER)
+        power_expand_board.set_power(self.bl_port, BL_POWER_MAX)
     
     def on_half(self) -> None:
-        power_expand_board.set_power(self.bl_port, BL_POWER/2)
+        power_expand_board.set_power(self.bl_port, BL_POWER_MIN)
         
     # Method to turn off the brushless motor
     def off(self) -> None:
@@ -219,33 +220,32 @@ class runtime:
 class shoot_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
-        if gamepad.get_joystick("Ry") > 40:
+        if gamepad.get_joystick("Ry") > 20:
             entrance_feed.set_reverse(True)
-            entrance_feed.on(60)
+            entrance_feed.on(70)
             feeder.set_reverse(False)
-            feeder.on(60)
+            feeder.on(70)
             front_input.set_reverse(True)
             front_input.on(100)
-        elif gamepad.get_joystick("Ry") < -40:
+        elif gamepad.get_joystick("Ry") < -20:
             entrance_feed.set_reverse(False)
-            entrance_feed.on(60)
+            entrance_feed.on(70)
             feeder.set_reverse(True)
-            feeder.on(60)
+            feeder.on(70)
             front_input.set_reverse(False)
             front_input.on(100)
         else:
             entrance_feed.off()
             feeder.off()
             front_input.off()
+        #Shooter control
         if gamepad.is_key_pressed("R1"):
             bl_1.on_max()
-            bl_2.on_max()
         elif gamepad.is_key_pressed("L1"):
             bl_1.on_half()
-            bl_2.on_half()
         else:
             bl_1.off()
-            bl_2.off()
+
         #shooter_angle control
         if gamepad.is_key_pressed("N2"):
             angle_left.move(-6, 10)
@@ -277,15 +277,6 @@ class gripper_mode:
             gripper1.on(100)
         else:
             gripper1.off()
-
-        if gamepad.is_key_pressed("R1"):
-            item_controller.set_reverse(True)
-            item_controller.on(50)
-        elif gamepad.is_key_pressed("L1"):
-            item_controller.set_reverse(False)
-            item_controller.on(50)
-        else:
-            item_controller.off()
         
 
 #Block and Cube Management System
@@ -295,10 +286,8 @@ front_input = dc_motor("DC3")
 #lift and gripper
 lift = dc_motor("DC6")
 gripper1 = dc_motor("DC7")
-item_controller = dc_motor("DC5")  # For block and cube management
 #shooting
 bl_1 = brushless_motor("BL1")
-bl_2 = brushless_motor("BL2")
 #shooting angle
 angle_left = smartservo_class("M4", "INDEX1")
 angle_right = smartservo_class("M4", "INDEX2") # only for angles
