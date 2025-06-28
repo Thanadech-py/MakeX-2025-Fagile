@@ -6,7 +6,7 @@ from mbuild import power_expand_board
 from mbuild import gamepad
 from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
-# import time
+import time
 
 left_forward_wheel = encoder_motor_class("M2", "INDEX1")
 right_forward_wheel = encoder_motor_class("M6", "INDEX1")
@@ -73,7 +73,7 @@ class util:
         
 class sensor:
     acc_x_vals = []
-    acc_y_vals = []
+    acc_z_vals = []
 
     @staticmethod
     def filtered_acc(axis: str, size: int = 5):
@@ -82,11 +82,11 @@ class sensor:
             if len(sensor.acc_x_vals) > size:
                 sensor.acc_x_vals.pop(0)
             return sum(sensor.acc_x_vals) / len(sensor.acc_x_vals)
-        elif axis == "Y":
-            sensor.acc_y_vals.append(novapi.get_acceleration("Y"))
-            if len(sensor.acc__y_vals) > size:
-                sensor.acc_y_vals.pop(0)
-            return sum(sensor.acc_y_vals) / len(sensor.acc_y_vals)
+        elif axis == "Z":
+            sensor.acc_z_vals.append(novapi.get_acceleration("Z"))
+            if len(sensor.acc_z_vals) > size:
+                sensor.acc_z_vals.pop(0)
+            return sum(sensor.acc_z_vals) / len(sensor.acc_z_vals)
     
 class holonomic:    
     pid = {
@@ -146,6 +146,7 @@ class holonomic:
     def turn_left(power):
         holonomic.drive(0, 0, -power)
 
+
 class dc_motor:
     # Default DC port
     dc_port = "DC1"
@@ -204,8 +205,8 @@ class runtime:
             holonomic.turn_left(MAX_SPEED)
         elif gamepad.is_key_pressed("Right"):
             holonomic.turn_right(MAX_SPEED)
-        elif abs(gamepad.get_joystick("Lx")) > 20:
-            holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
+        elif abs(gamepad.get_joystick("Rx")) > 20:
+            holonomic.drive(-gamepad.get_joystick("Rx"), 0, 0)
         else :
             holonomic.drive(0,0,0,0)
 
@@ -240,11 +241,11 @@ class shoot_mode:
             front_input.off()
         #Shooter control
         if gamepad.is_key_pressed("R1"):
-            bl_1.on_max()
+            bl_2.on_max()
         elif gamepad.is_key_pressed("L1"):
-            bl_1.on_half()
+            bl_2.on_half()
         else:
-            bl_1.off()
+            bl_2.off()
 
         #shooter_angle control
         if gamepad.is_key_pressed("N2"):
@@ -268,15 +269,38 @@ class gripper_mode:
         else:
             lift.off()
 
-        if gamepad.is_key_pressed("N1"):
-            gripper1.set_reverse(True)
-            gripper1.on(100)
+        if gamepad.is_key_pressed("L1"):
+            gripper1.set_power(100)
+            gripper2.set_power(-100)
 
-        elif gamepad.is_key_pressed("N4"):
-            gripper1.set_reverse(False)
-            gripper1.on(100)
+        elif gamepad.is_key_pressed("R1"):
+            gripper1.set_power(-100)
+            gripper2.set_power(100)
         else:
-            gripper1.off()
+            gripper1.set_power(0)
+            gripper2.set_power(0)
+            
+        if gamepad.is_key_pressed("N4"):
+            gripper_level.set_reverse(True)
+            gripper_level.on(100)
+        elif gamepad.is_key_pressed("N1"):
+            gripper_level.set_reverse(False)
+            gripper_level.on(100)
+        else:
+            gripper_level.off()
+
+class Auto:
+    def run():
+        holonomic.move_forward(MAX_SPEED)
+        time.sleep(1.25)
+        motors.stop()
+        holonomic.turn_right(60)
+        time.sleep(1.45)
+        motors.stop()
+        holonomic.slide_left(40)
+        time.sleep(1.0)
+        motors.stop()
+        time.sleep(500000)
         
 
 #Block and Cube Management System
@@ -285,17 +309,20 @@ feeder = dc_motor("DC2")
 front_input = dc_motor("DC3")
 #lift and gripper
 lift = dc_motor("DC6")
-gripper1 = dc_motor("DC7")
+gripper1 = encoder_motor_class("M4", "INDEX1")
+gripper2 = encoder_motor_class("M1", "INDEX1")
+
+gripper_level = dc_motor("DC7")
 #shooting
-bl_1 = brushless_motor("BL1")
+bl_2 = brushless_motor("BL2")
 #shooting angle
-angle_left = smartservo_class("M4", "INDEX1")
-angle_right = smartservo_class("M4", "INDEX2") # only for angles
+angle_right = smartservo_class("M1", "INDEX1")
+angle_left = smartservo_class("M1", "INDEX2") # only for angles
 #utility
 Laser = dc_motor("DC8")
 while True:
     if power_manage_module.is_auto_mode():
-        pass
+        Auto.run()
     else:
         runtime.move()
         if gamepad.is_key_pressed("R2"):
