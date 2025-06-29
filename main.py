@@ -15,7 +15,7 @@ right_back_wheel = encoder_motor_class("M5", "INDEX1")
 
 MAX_SPEED = 255
 BL_POWER_MAX = 100
-BL_POWER_MIN = 75
+BL_POWER_MIN = 70
 
 class PID:
     def __init__(self, Kp, Ki, Kd, setpoint=0):
@@ -73,17 +73,23 @@ class util:
         
 class sensor:
     acc_x_vals = []
+    acc_y_vals = []
     acc_z_vals = []
 
     @staticmethod
     def filtered_acc(axis: str, size: int = 5):
-        if axis == "X":
+        if axis == "X": # For moving left/right
             sensor.acc_x_vals.append(novapi.get_acceleration("X"))
             if len(sensor.acc_x_vals) > size:
                 sensor.acc_x_vals.pop(0)
             return sum(sensor.acc_x_vals) / len(sensor.acc_x_vals)
-        elif axis == "Z":
-            sensor.acc_z_vals.append(novapi.get_acceleration("Z"))
+        elif axis == "Y": #For moving forward/backward
+            sensor.acc_y_vals.append(novapi.get_acceleration("Y"))
+            if len(sensor.acc_y_vals) > size:
+                sensor.acc_y_vals.pop(0)
+            return sum(sensor.acc_y_vals) / len(sensor.acc_y_vals)
+        elif axis == "Z": #For turning left/right
+            sensor.acc_z_vals.append(novapi.get_yaw("Z"))
             if len(sensor.acc_z_vals) > size:
                 sensor.acc_z_vals.pop(0)
             return sum(sensor.acc_z_vals) / len(sensor.acc_z_vals)
@@ -91,7 +97,8 @@ class sensor:
 class holonomic:    
     pid = {
         "vx": PID(0.1021, 0.07, 0.03211),
-        "vy": PID(0.15, 0.05, 0.02)
+        "vy": PID(0.12, 0.05, 0.09),
+        "wL": PID(0.1, 0.05, 0.02)
     }
 
     @staticmethod
@@ -106,9 +113,11 @@ class holonomic:
         multiplier = 2
         
         holonomic.pid["vx"].set_setpoint(vx)
-        vx = 5 * holonomic.pid["vx"].update(sensor.filtered_acc("Z"))
+        vx = 5 * holonomic.pid["vx"].update(sensor.filtered_acc("Y"))
         holonomic.pid["vy"].set_setpoint(vy)
         vy = 5 * holonomic.pid["vy"].update(sensor.filtered_acc("X"))
+        holonomic.pid["wL"].set_setpoint(wL)
+        wL = 5 * holonomic.pid["wL"].update(sensor.filtered_acc("Z"))
 
         vFL = (vx + vy + wL) * multiplier
         vFR = (-vx + vy - wL) * multiplier
@@ -205,8 +214,8 @@ class runtime:
             holonomic.turn_left(MAX_SPEED)
         elif gamepad.is_key_pressed("Right"):
             holonomic.turn_right(MAX_SPEED)
-        elif abs(gamepad.get_joystick("Rx")) > 20:
-            holonomic.drive(-gamepad.get_joystick("Rx"), 0, 0)
+        elif abs(gamepad.get_joystick("Lx")) > 20:
+            holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
         else :
             holonomic.drive(0,0,0,0)
 
