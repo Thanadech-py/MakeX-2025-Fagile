@@ -74,8 +74,6 @@ class util:
 class sensor:
     acc_x_vals = []
     acc_y_vals = []
-    acc_z_vals = []
-
     @staticmethod
     def filtered_acc(axis: str, size: int = 5):
         if axis == "X": # For moving left/right
@@ -88,15 +86,10 @@ class sensor:
             if len(sensor.acc_y_vals) > size:
                 sensor.acc_y_vals.pop(0)
             return sum(sensor.acc_y_vals) / len(sensor.acc_y_vals)
-        elif axis == "Z": #For turning left/right
-            sensor.acc_z_vals.append(novapi.get_yaw("Z"))
-            if len(sensor.acc_z_vals) > size:
-                sensor.acc_z_vals.pop(0)
-            return sum(sensor.acc_z_vals) / len(sensor.acc_z_vals)
     
 class holonomic:    
     pid = {
-        "vx": PID(0.1021, 0.07, 0.03211),
+        "vx": PID(0.1021, 0.08, 0.045),
         "vy": PID(0.12, 0.05, 0.09),
         "wL": PID(0.1, 0.05, 0.02)
     }
@@ -117,7 +110,6 @@ class holonomic:
         holonomic.pid["vy"].set_setpoint(vy)
         vy = 5 * holonomic.pid["vy"].update(sensor.filtered_acc("X"))
         holonomic.pid["wL"].set_setpoint(wL)
-        wL = 5 * holonomic.pid["wL"].update(sensor.filtered_acc("Z"))
 
         vFL = (vx + vy + wL) * multiplier
         vFR = (-vx + vy - wL) * multiplier
@@ -277,26 +269,15 @@ class gripper_mode:
             lift.on(100)
         else:
             lift.off()
-
-        if gamepad.is_key_pressed("L1"):
-            gripper1.set_power(100)
-            gripper2.set_power(-100)
-
-        elif gamepad.is_key_pressed("R1"):
-            gripper1.set_power(-100)
-            gripper2.set_power(100)
+        
+        if gamepad.is_key_pressed("N1"):
+            gripper.set_reverse(True)
+            gripper.on(100)
+        elif gamepad.is_key_pressed("N4"):
+            gripper.set_reverse(False)
+            gripper.on(100)
         else:
-            gripper1.set_power(0)
-            gripper2.set_power(0)
-            
-        if gamepad.is_key_pressed("N4"):
-            gripper_level.set_reverse(True)
-            gripper_level.on(100)
-        elif gamepad.is_key_pressed("N1"):
-            gripper_level.set_reverse(False)
-            gripper_level.on(100)
-        else:
-            gripper_level.off()
+            gripper.off()
 
 class Auto:
     def run():
@@ -318,10 +299,7 @@ feeder = dc_motor("DC2")
 front_input = dc_motor("DC3")
 #lift and gripper
 lift = dc_motor("DC6")
-gripper1 = encoder_motor_class("M4", "INDEX1")
-gripper2 = encoder_motor_class("M1", "INDEX1")
-
-gripper_level = dc_motor("DC7")
+gripper = dc_motor("DC7")
 #shooting
 bl_2 = brushless_motor("BL2")
 #shooting angle
