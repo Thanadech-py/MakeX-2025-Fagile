@@ -106,9 +106,9 @@ class holonomic:
         multiplier = 2
         
         holonomic.pid["vx"].set_setpoint(vx)
-        vx = 5 * holonomic.pid["vx"].update(sensor.filtered_acc("Y"))
+        vx = holonomic.pid["vx"].update(sensor.filtered_acc("Y"))
         holonomic.pid["vy"].set_setpoint(vy)
-        vy = 5 * holonomic.pid["vy"].update(sensor.filtered_acc("X"))
+        vy = holonomic.pid["vy"].update(sensor.filtered_acc("X"))
         holonomic.pid["wL"].set_setpoint(wL)
 
         vFL = (vx + vy + wL) * multiplier
@@ -145,8 +145,7 @@ class holonomic:
 
     @staticmethod
     def turn_left(power):
-        holonomic.drive(0, 0, -power)
-
+        holonomic.drive(0, 0, -power)    
 
 class dc_motor:
     # Default DC port
@@ -281,16 +280,7 @@ class gripper_mode:
 
 class Auto:
     def run():
-        holonomic.move_forward(MAX_SPEED)
-        time.sleep(1.25)
-        motors.stop()
-        holonomic.turn_right(60)
-        time.sleep(1.45)
-        motors.stop()
-        holonomic.slide_left(40)
-        time.sleep(1.0)
-        motors.stop()
-        time.sleep(500000)
+        pass
         
 
 #Block and Cube Management System
