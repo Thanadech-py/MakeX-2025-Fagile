@@ -9,8 +9,8 @@ from mbuild import power_manage_module
 import time
 
 left_forward_wheel = encoder_motor_class("M2", "INDEX1")
-right_forward_wheel = encoder_motor_class("M6", "INDEX1")
-left_back_wheel = encoder_motor_class("M3", "INDEX1")
+right_forward_wheel = encoder_motor_class("M3", "INDEX1")
+left_back_wheel = encoder_motor_class("M4", "INDEX1")
 right_back_wheel = encoder_motor_class("M5", "INDEX1")
 
 MAX_SPEED = 255
@@ -170,6 +170,23 @@ class dc_motor:
     def off(self) -> None:
         power_expand_board.stop(self.dc_port)
         
+class encoder_motor:
+    #Default encoder port
+    encode = "M1"
+    Index = "INDEX1"
+    
+    #Initialize Encoder motor with a specific port
+    def __init__(self, port: str, number: str) -> None:
+        self.encode = port
+        self.Index = number
+    
+    # Method to control Encoder motor
+    def on(self, Power: int) -> None:
+        encoder_motor_class.set_speed(self.encode, Power)
+    
+    def off(self) -> None:
+        encoder_motor_class.set_speed(self.encode, 0)
+        
 class brushless_motor:
     # Default brushless motor port
     bl_port = "BL1"
@@ -197,19 +214,24 @@ class runtime:
     # Robot state
     ENABLED = True
     def move():
-        if gamepad.is_key_pressed("Up"):
-            holonomic.move_forward(MAX_SPEED)
-        elif gamepad.is_key_pressed("Down"):
-            holonomic.move_backward(MAX_SPEED)
-        elif gamepad.is_key_pressed("Left"):
-            holonomic.turn_left(MAX_SPEED)
-        elif gamepad.is_key_pressed("Right"):
-            holonomic.turn_right(MAX_SPEED)
-        elif abs(gamepad.get_joystick("Lx")) > 20:
-            holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
-        else :
-            holonomic.drive(0,0,0,0)
-
+        # if gamepad.is_key_pressed("Up"):
+        #     holonomic.move_forward(MAX_SPEED)
+        # elif gamepad.is_key_pressed("Down"):
+        #     holonomic.move_backward(MAX_SPEED)
+        # elif gamepad.is_key_pressed("Left"):
+        #     holonomic.turn_left(MAX_SPEED)
+        # elif gamepad.is_key_pressed("Right"):
+        #     holonomic.turn_right(MAX_SPEED)
+        # elif abs(gamepad.get_joystick("Lx")) > 20:
+        #     holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
+        # else :
+        #     holonomic.drive(0,0,0,0)
+        
+        if math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Rx")) > 20:
+            holonomic.drive(-gamepad.get_joystick("Lx"), gamepad.get_joystick("Ly"), -gamepad.get_joystick("Rx"), pid=True)
+        else:
+            motors.drive(0,0,0,0)
+                   
     def change_mode():
         if novapi.timer() > 0.9:
             if runtime.CTRL_MODE == 0:
@@ -261,11 +283,9 @@ class gripper_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
         if gamepad.is_key_pressed("N2"):
-            lift.set_reverse(False)
             lift.on(100)
         elif gamepad.is_key_pressed("N3"):
-            lift.set_reverse(True)
-            lift.on(100)
+            lift.on(-100)
         else:
             lift.off()
         
@@ -287,8 +307,13 @@ class Auto:
 entrance_feed = dc_motor("DC1")
 feeder = dc_motor("DC2")
 front_input = dc_motor("DC3")
+
+#Auto keepper
+left_motor_keeper = dc_motor("DC4")
+right_motor_keeper = dc_motor("DC5")
+
 #lift and gripper
-lift = dc_motor("DC6")
+lift = encoder_motor("M6", "INDEX1")
 gripper = dc_motor("DC7")
 #shooting
 bl_2 = brushless_motor("BL2")
