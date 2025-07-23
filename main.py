@@ -9,8 +9,8 @@ from mbuild import power_manage_module
 import time
 
 left_forward_wheel = encoder_motor_class("M2", "INDEX1")
-right_forward_wheel = encoder_motor_class("M6", "INDEX1")
-left_back_wheel = encoder_motor_class("M3", "INDEX1")
+right_forward_wheel = encoder_motor_class("M3", "INDEX1")
+left_back_wheel = encoder_motor_class("M4", "INDEX1")
 right_back_wheel = encoder_motor_class("M5", "INDEX1")
 
 MAX_SPEED = 255
@@ -42,7 +42,7 @@ class PID:
         D = self.Kd * derivative
 
         # Calculate the output
-        output = P + I + D
+        output = max(min(P + I + D, MAX_SPEED), -MAX_SPEED)
 
         # Save the current error for the next update
         self.previous_error = error
@@ -57,10 +57,11 @@ class PID:
 class motors:
     @staticmethod
     def drive(lf: int, lb: int, rf: int, rb: int):
-        left_forward_wheel.set_speed(lf)
-        left_back_wheel.set_speed(lb)
-        right_forward_wheel.set_speed(-rf)
-        right_back_wheel.set_speed(-rb)
+        left_back_wheel.set_speed(lb) # left back :DDDDD
+        right_back_wheel.set_speed(-rb)  # RIGHT BACK  
+        right_forward_wheel.set_speed(-(rf))      # RIGHT FORWARD
+        left_forward_wheel.set_speed(lf)             # LEFT BACK
+
 
     @staticmethod
     def stop():
@@ -89,9 +90,9 @@ class sensor:
     
 class holonomic:    
     pid = {
-        "vx": PID(0.1021, 0.08, 0.045),
-        "vy": PID(0.12, 0.05, 0.09),
-        "wL": PID(0.1, 0.05, 0.02)
+        "vx": PID(1, 0.06, 0.035),
+        "vy": PID(1, 0.05, 0.9)
+
     }
 
     @staticmethod
@@ -106,10 +107,10 @@ class holonomic:
         multiplier = 2
         
         holonomic.pid["vx"].set_setpoint(vx)
-        vx = 5 * holonomic.pid["vx"].update(sensor.filtered_acc("Y"))
+        vx = holonomic.pid["vx"].update(sensor.filtered_acc("Y"))
         holonomic.pid["vy"].set_setpoint(vy)
-        vy = 5 * holonomic.pid["vy"].update(sensor.filtered_acc("X"))
-        holonomic.pid["wL"].set_setpoint(wL)
+        vy = holonomic.pid["vy"].update(sensor.filtered_acc("X"))
+
 
         vFL = (vx + vy + wL) * multiplier
         vFR = (-vx + vy - wL) * multiplier
@@ -145,8 +146,7 @@ class holonomic:
 
     @staticmethod
     def turn_left(power):
-        holonomic.drive(0, 0, -power)
-
+        holonomic.drive(0, 0, -power)    
 
 class dc_motor:
     # Default DC port
@@ -198,19 +198,24 @@ class runtime:
     # Robot state
     ENABLED = True
     def move():
-        if gamepad.is_key_pressed("Up"):
-            holonomic.move_forward(MAX_SPEED)
-        elif gamepad.is_key_pressed("Down"):
-            holonomic.move_backward(MAX_SPEED)
-        elif gamepad.is_key_pressed("Left"):
-            holonomic.turn_left(MAX_SPEED)
-        elif gamepad.is_key_pressed("Right"):
-            holonomic.turn_right(MAX_SPEED)
-        elif abs(gamepad.get_joystick("Lx")) > 20:
-            holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
-        else :
-            holonomic.drive(0,0,0,0)
-
+        # if gamepad.is_key_pressed("Up"):
+        #     holonomic.move_forward(MAX_SPEED)
+        # elif gamepad.is_key_pressed("Down"):
+        #     holonomic.move_backward(MAX_SPEED)
+        # elif gamepad.is_key_pressed("Left"):
+        #     holonomic.turn_left(MAX_SPEED)
+        # elif gamepad.is_key_pressed("Right"):
+        #     holonomic.turn_right(MAX_SPEED)
+        # elif abs(gamepad.get_joystick("Lx")) > 20:
+        #     holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
+        # else :
+        #     holonomic.drive(0,0,0,0)
+        
+        if math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Rx")) > 20:
+            holonomic.drive(-gamepad.get_joystick("Lx"), gamepad.get_joystick("Ly"), -gamepad.get_joystick("Rx"))
+        else:
+            motors.drive(0,0,0,0)
+                   
     def change_mode():
         if novapi.timer() > 0.9:
             if runtime.CTRL_MODE == 0:
@@ -222,17 +227,17 @@ class runtime:
 class shoot_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
-        if gamepad.get_joystick("Ry") > 20:
-            entrance_feed.set_reverse(True)
-            entrance_feed.on(70)
-            feeder.set_reverse(False)
-            feeder.on(70)
-            front_input.set_reverse(True)
-            front_input.on(100)
-        elif gamepad.get_joystick("Ry") < -20:
+        if gamepad.is_key_pressed("N2"):
             entrance_feed.set_reverse(False)
             entrance_feed.on(70)
             feeder.set_reverse(True)
+            feeder.on(70)
+            front_input.set_reverse(True)
+            front_input.on(100)
+        elif gamepad.is_key_pressed("N3"):
+            entrance_feed.set_reverse(True)
+            entrance_feed.on(70)
+            feeder.set_reverse(False)
             feeder.on(70)
             front_input.set_reverse(False)
             front_input.on(100)
@@ -249,11 +254,11 @@ class shoot_mode:
             bl_2.off()
 
         #shooter_angle control
-        if gamepad.is_key_pressed("N2"):
-            angle_left.move(-6, 10)
+        if gamepad.is_key_pressed("Down"):
+            angle_left.move(6, 10)
             angle_right.move(6, 10)
-        elif gamepad.is_key_pressed("N3"):
-            angle_left.move(6,10)
+        elif gamepad.is_key_pressed("Up"):
+            angle_left.move(-6,10)
             angle_right.move(-6, 10)
         else:
             pass
@@ -262,13 +267,11 @@ class gripper_mode:
     # Method to control various robot functions based on button inputs
     def control_button():
         if gamepad.is_key_pressed("N2"):
-            lift.set_reverse(False)
-            lift.on(100)
+            lift.set_power(-90)
         elif gamepad.is_key_pressed("N3"):
-            lift.set_reverse(True)
-            lift.on(100)
+            lift.set_power(20)
         else:
-            lift.off()
+            lift.set_speed(0)
         
         if gamepad.is_key_pressed("N1"):
             gripper.set_reverse(True)
@@ -279,32 +282,42 @@ class gripper_mode:
         else:
             gripper.off()
 
+        if gamepad.is_key_pressed("R1"):
+            left_motor_keeper.set_reverse(True)
+            left_motor_keeper.on(100)
+            right_motor_keeper.set_reverse(False)
+            right_motor_keeper.on(100)
+        elif gamepad.is_key_pressed("L1"):
+            left_motor_keeper.set_reverse(False)
+            left_motor_keeper.on(100)
+            right_motor_keeper.set_reverse(True)
+            right_motor_keeper.on(100)
+        else:
+            left_motor_keeper.off()
+            right_motor_keeper.off()
+
 class Auto:
     def run():
-        holonomic.move_forward(MAX_SPEED)
-        time.sleep(1.25)
-        motors.stop()
-        holonomic.turn_right(60)
-        time.sleep(1.45)
-        motors.stop()
-        holonomic.slide_left(40)
-        time.sleep(1.0)
-        motors.stop()
-        time.sleep(500000)
+        pass
         
 
 #Block and Cube Management System
 entrance_feed = dc_motor("DC1")
 feeder = dc_motor("DC2")
 front_input = dc_motor("DC3")
+
+#Auto keepper
+left_motor_keeper = dc_motor("DC4")
+right_motor_keeper = dc_motor("DC5")
+
 #lift and gripper
-lift = dc_motor("DC6")
+lift = encoder_motor_class("M6", "INDEX1")
 gripper = dc_motor("DC7")
 #shooting
 bl_2 = brushless_motor("BL2")
 #shooting angle
-angle_right = smartservo_class("M1", "INDEX1")
-angle_left = smartservo_class("M1", "INDEX2") # only for angles
+angle_right = smartservo_class("M1", "INDEX2")
+angle_left = smartservo_class("M1", "INDEX1") # only for angles
 #utility
 Laser = dc_motor("DC8")
 while True:
