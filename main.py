@@ -6,13 +6,16 @@ from mbuild import power_expand_board
 from mbuild import gamepad
 from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
-import time
+#import time #for auto stages
 
+#Define encoder motors for wheels
 left_forward_wheel = encoder_motor_class("M2", "INDEX1")
 right_forward_wheel = encoder_motor_class("M3", "INDEX1")
 left_back_wheel = encoder_motor_class("M4", "INDEX1")
 right_back_wheel = encoder_motor_class("M5", "INDEX1")
 
+# Define constants
+# Maximum speed for the motors
 MAX_SPEED = 255
 BL_POWER_MAX = 100
 BL_POWER_MIN = 70
@@ -157,13 +160,10 @@ class dc_motor:
     # Initialize DC motor with a specific port
     def __init__(self, port: str) -> None:
         self.dc_port = port
-        
-    # Method to set the direction of the motor
-    def set_reverse(self, rev: bool) -> None:
+         
+    # Method to turn control the DC motor
+    def on(self, Power: int, rev: bool) -> None:
         self.reverse = rev
-        
-    # Method to turn on the DC motor
-    def on(self, Power: int) -> None:
         power = -Power if self.reverse else Power
         power_expand_board.set_power(self.dc_port, power)
         
@@ -198,6 +198,7 @@ class runtime:
     # Robot state
     ENABLED = True
     def move():
+        #control holonomic movement via gamepad arrow keys
         # if gamepad.is_key_pressed("Up"):
         #     holonomic.move_forward(MAX_SPEED)
         # elif gamepad.is_key_pressed("Down"):
@@ -211,6 +212,7 @@ class runtime:
         # else :
         #     holonomic.drive(0,0,0,0)
         
+        #control holonomic movement via gamepad joysticks
         if math.fabs(gamepad.get_joystick("Lx")) > 20 or math.fabs(gamepad.get_joystick("Ly")) > 20 or math.fabs(gamepad.get_joystick("Rx")) > 20:
             holonomic.drive(-gamepad.get_joystick("Lx"), gamepad.get_joystick("Ly"), -gamepad.get_joystick("Rx"))
         else:
@@ -224,23 +226,17 @@ class runtime:
                 runtime.CTRL_MODE = 0
             novapi.reset_timer()
 
+#shooting mode
 class shoot_mode:
-    # Method to control various robot functions based on button inputs
     def control_button():
         if gamepad.is_key_pressed("N2"):
-            entrance_feed.set_reverse(False)
-            entrance_feed.on(70)
-            feeder.set_reverse(True)
-            feeder.on(70)
-            front_input.set_reverse(True)
-            front_input.on(100)
+            entrance_feed.on(70, False)
+            feeder.on(70, True)
+            front_input.on(100, True)
         elif gamepad.is_key_pressed("N3"):
-            entrance_feed.set_reverse(True)
-            entrance_feed.on(70)
-            feeder.set_reverse(False)
-            feeder.on(70)
-            front_input.set_reverse(False)
-            front_input.on(100)
+            entrance_feed.on(70, True)
+            feeder.on(70, False)
+            front_input.on(100, False)
         else:
             entrance_feed.off()
             feeder.off()
@@ -263,8 +259,8 @@ class shoot_mode:
         else:
             pass
  
+# Gripper control mode
 class gripper_mode:
-    # Method to control various robot functions based on button inputs
     def control_button():
         if gamepad.is_key_pressed("N2"):
             lift.set_power(-90)
@@ -274,24 +270,18 @@ class gripper_mode:
             lift.set_speed(0)
         
         if gamepad.is_key_pressed("N1"):
-            gripper.set_reverse(True)
-            gripper.on(100)
+            gripper.on(100, True)
         elif gamepad.is_key_pressed("N4"):
-            gripper.set_reverse(False)
-            gripper.on(100)
+            gripper.on(100, False)
         else:
             gripper.off()
 
         if gamepad.is_key_pressed("R1"):
-            left_motor_keeper.set_reverse(True)
-            left_motor_keeper.on(100)
-            right_motor_keeper.set_reverse(False)
-            right_motor_keeper.on(100)
+            left_motor_keeper.on(100, True)
+            right_motor_keeper.on(100, False)
         elif gamepad.is_key_pressed("L1"):
-            left_motor_keeper.set_reverse(False)
-            left_motor_keeper.on(100)
-            right_motor_keeper.set_reverse(True)
-            right_motor_keeper.on(100)
+            left_motor_keeper.on(100, False)
+            right_motor_keeper.on(100, True)
         else:
             left_motor_keeper.off()
             right_motor_keeper.off()
@@ -313,13 +303,18 @@ right_motor_keeper = dc_motor("DC5")
 #lift and gripper
 lift = encoder_motor_class("M6", "INDEX1")
 gripper = dc_motor("DC7")
+
 #shooting
-bl_2 = brushless_motor("BL2")
+bl_2 = brushless_motor("BL1")
+
 #shooting angle
 angle_right = smartservo_class("M1", "INDEX2")
-angle_left = smartservo_class("M1", "INDEX1") # only for angles
+angle_left = smartservo_class("M1", "INDEX1")
+
 #utility
 Laser = dc_motor("DC8")
+
+
 while True:
     if power_manage_module.is_auto_mode():
         Auto.run()
@@ -331,8 +326,7 @@ while True:
             if runtime.CTRL_MODE == 0:
                 shoot_mode.control_button()
                 #Turn Laser on for shooting mode
-                Laser.set_reverse(True)
-                Laser.on(10)
+                Laser.on(10, True)
             else:
                 gripper_mode.control_button()
                 #Turn Laser off for gripper mode
