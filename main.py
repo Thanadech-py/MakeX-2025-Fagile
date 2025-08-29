@@ -207,21 +207,34 @@ class runtime:
             novapi.reset_timer()
     
     def shoot_peem():
-        if gamepad.get_joystick("Ry") > 20:
-            entrance_feed.on(70, True)
-            feeder.on(70, True)
-            front_input.on(100, True)
-        elif gamepad.get_joystick("Ry") < -20:
-            entrance_feed.on(70, False)
-            feeder.on(70, False)
-            front_input.on(100, False)
-        else:
+        if gamepad.is_key_pressed("N1"):
+            entrance_feed.on(50, True)
+            feeder.on(50, True)
+        elif gamepad.is_key_pressed("N4"):
+            entrance_feed.on(50, False)
+            feeder.on(50, False)
+        elif gamepad.is_key_pressed("+"):
             entrance_feed.off()
             feeder.off()
+
+        if gamepad.get_joystick("Ry") > 20:
+            # entrance_feed.on(70, True)
+            # feeder.on(70, True)
+            front_input.on(100, True)
+            disc_stock.on(100, False)
+        elif gamepad.get_joystick("Ry") < -20:
+            # entrance_feed.on(70, False)
+            # feeder.on(70, False)
+            front_input.on(100, False)
+            disc_stock.on(100, True)
+        else:
+            # entrance_feed.off()
+            # feeder.off()
             front_input.off()
+            disc_stock.off()
         #Shooter control
         if gamepad.is_key_pressed("R1"):
-               bl_2.on_max()
+            bl_2.on_max()
         elif gamepad.is_key_pressed("L1"):
             bl_2.on_half()
         else:
@@ -268,6 +281,7 @@ class Auto:
 entrance_feed = dc_motor("DC1")
 feeder = dc_motor("DC2")
 front_input = dc_motor("DC3")
+disc_stock = dc_motor("DC6")
 #lift and gripper
 lift = encoder_motor_class("M6", "INDEX1")
 gripper = dc_motor("DC7")
