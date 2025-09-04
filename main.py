@@ -6,6 +6,9 @@ from mbuild import power_expand_board
 from mbuild import gamepad
 from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
+from mbuild.led_matrix import led_matrix_class
+
+status = led_matrix_class("PORT3", INDEX=1)
 
 class PID:
     def __init__(self, Kp, Ki, Kd, setpoint=0):
@@ -304,10 +307,12 @@ while True:
             runtime.change_mode()
         else:
             if runtime.CTRL_MODE == 0:
+                status.show("Shoot", wait=True)
                 runtime.shoot_peem()
                 #Turn Laser on for shooting mode
                 Laser.on(10, True)
             else:
+                status.show("Gripper", wait=True)
                 runtime.gripper_peem()
                 #Turn Laser off for gripper mode
                 Laser.off()
