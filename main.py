@@ -242,14 +242,22 @@ class runtime:
             bl_2.on_half()
         else:
             bl_2.off()
+            
+        angle = 0
         if gamepad.is_key_pressed("N2"):
-            angle_left.move(-6, 10)
-            angle_right.move(-6, 10)
+            angle = angle - 6
         elif gamepad.is_key_pressed("N3"):
-            angle_left.move(6, 10)
-            angle_right.move(6, 10)
+            angle = angle + 6
+            
+        if angle == 180:
+            angle = 0
+        elif angle == -180:
+            angle = 0
         else:
-            pass
+            angle = angle
+        
+        angle_left.move(angle, 10)
+        angle_right.move(angle, 10)
     
     def gripper_peem():
         if gamepad.is_key_pressed("N2"):
@@ -265,6 +273,7 @@ class runtime:
             gripper.on(60, False)
         else:
             gripper.off()
+            
             
         if gamepad.is_key_pressed("R1"):
             left_block.on(100, True)
