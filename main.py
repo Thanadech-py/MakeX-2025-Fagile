@@ -1,6 +1,7 @@
 # Import necessary modules
 import novapi
 import math
+from time import sleep
 from mbuild.encoder_motor import encoder_motor_class
 from mbuild import power_expand_board
 from mbuild import gamepad
@@ -8,8 +9,7 @@ from mbuild.smartservo import smartservo_class
 from mbuild import power_manage_module
 from mbuild.led_matrix import led_matrix_class
 
-status = led_matrix_class("PORT3", INDEX=1)
-
+status = led_matrix_class("PORT3", "INDEX1")
 class PID:
     def __init__(self, Kp, Ki, Kd, setpoint=0):
         self.Kp = Kp  # Proportional gain
@@ -242,22 +242,19 @@ class runtime:
             bl_2.on_half()
         else:
             bl_2.off()
-            
-        angle = 0
-        if gamepad.is_key_pressed("N2"):
-            angle = angle - 6
-        elif gamepad.is_key_pressed("N3"):
-            angle = angle + 6
-            
-        if angle == 180:
-            angle = 0
-        elif angle == -180:
-            angle = 0
-        else:
-            angle = angle
         
-        angle_left.move(angle, 10)
-        angle_right.move(angle, 10)
+        angle = 0
+        if gamepad.is_key_pressed("N2"):            
+            angle = angle - 36
+        elif gamepad.is_key_pressed("N3"):
+            angle = angle + 28
+        else:
+            angle = angle_left.get_value("angle") and angle_right.get_value("angle")
+            
+
+        # Lock angle position by setting both servos to the current angle
+        angle_left.move_to(angle, 10)
+        angle_right.move_to(angle, 10)
     
     def gripper_peem():
         if gamepad.is_key_pressed("N2"):
@@ -273,7 +270,6 @@ class runtime:
             gripper.on(60, False)
         else:
             gripper.off()
-            
             
         if gamepad.is_key_pressed("R1"):
             left_block.on(100, True)
@@ -316,12 +312,12 @@ while True:
             runtime.change_mode()
         else:
             if runtime.CTRL_MODE == 0:
-                status.show("Shoot", wait=True)
+                status.show("SHOOT", wait=False)
                 runtime.shoot_peem()
                 #Turn Laser on for shooting mode
                 Laser.on(10, True)
             else:
-                status.show("Gripper", wait=True)
+                status.show("GRIPPER", wait=False)
                 runtime.gripper_peem()
                 #Turn Laser off for gripper mode
                 Laser.off()
