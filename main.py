@@ -58,12 +58,12 @@ class sensor:
     
     def filtered_acc(axis: str, size: int = 5):
         if axis == "X": # For moving left/right
-            sensor.acc_x_vals.append(novapi.get_acceleration("Z"))
+            sensor.acc_x_vals.append(novapi.get_acceleration("X"))
             if len(sensor.acc_x_vals) > size:
                 sensor.acc_x_vals.pop(0)
             return sum(sensor.acc_x_vals) / len(sensor.acc_x_vals)
         elif axis == "Y": #For moving forward/backward
-            sensor.acc_y_vals.append(novapi.get_acceleration("Y"))
+            sensor.acc_y_vals.append(novapi.get_acceleration("Z"))
             if len(sensor.acc_y_vals) > size:
                 sensor.acc_y_vals.pop(0)
             return sum(sensor.acc_y_vals) / len(sensor.acc_y_vals)
@@ -78,7 +78,7 @@ class holonomic():
     right_back = encoder_motor_class("M5", "INDEX1")
 
     pid = {
-        "vx": PID(0.5, 0.1, 0.1),
+        "vx": PID(1, 0.6, 0.1),
         "vy": PID(0.5, 0.1, 0.1)
     }
 
@@ -99,14 +99,14 @@ class holonomic():
         if math.fabs(wL) < math.fabs(deadzone):
             wL = 0
             
-        multiplier = 2.5
+        multiplier = 2
         
         holonomic.pid["vx"].set_setpoint(vx)
         vx = 5 * holonomic.pid["vx"].update(sensor.filtered_acc("Y"))
         holonomic.pid["vy"].set_setpoint(vy)
         vy = 5 * holonomic.pid["vy"].update(sensor.filtered_acc("X"))
 
-        vFL = (vx + vy + wL) * multiplier
+        vFL = (vx + vy + wL) * multiplier * 16
         vFR = (-vx + vy - wL) * multiplier
         vBL = (-vx + vy + wL) * multiplier
         vBR = (vx + vy - wL) * multiplier 
@@ -210,29 +210,29 @@ class runtime:
             novapi.reset_timer()
     
     def shoot_peem():
-        if gamepad.is_key_pressed("N1"):
-            entrance_feed.on(50, True)
-            feeder.on(50, True)
-        elif gamepad.is_key_pressed("N4"):
-            entrance_feed.on(50, False)
-            feeder.on(50, False)
-        elif gamepad.is_key_pressed("+"):
-            entrance_feed.off()
-            feeder.off()
-
+        # if gamepad.is_key_pressed("N1"):
+        #     entrance_feed.on(50, True)
+        #     feeder.on(50, True)
+        # elif gamepad.is_key_pressed("N4"):
+        #     entrance_feed.on(50, False)
+        #     feeder.on(50, False)
+        # elif gamepad.is_key_pressed("+"):
+        #     entrance_feed.off()
+        #     feeder.off()
+        
         if gamepad.get_joystick("Ry") > 20:
-            # entrance_feed.on(70, True)
-            # feeder.on(70, True)
+            entrance_feed.on(70, True)
+            feeder.on(70, True)
             front_input.on(100, True)
             disc_stock.on(100, False)
         elif gamepad.get_joystick("Ry") < -20:
-            # entrance_feed.on(70, False)
-            # feeder.on(70, False)
+            entrance_feed.on(70, False)
+            feeder.on(70, False)
             front_input.on(100, False)
             disc_stock.on(100, True)
         else:
-            # entrance_feed.off()
-            # feeder.off()
+            entrance_feed.off()
+            feeder.off()
             front_input.off()
             disc_stock.off()
         #Shooter control
