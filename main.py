@@ -138,6 +138,47 @@ class holonomic():
     
     def stop():
         holonomic.drive(0, 0, 0)
+        
+    #for Auto mode
+    def move_forward_distance(distance_cm, power):
+        # Calculate the time needed to move the specified distance
+        time_needed = distance_cm / (power * 0.1)  # Adjust the factor as needed
+        holonomic.move_forward(power)
+        sleep(time_needed)  # Convert to milliseconds
+        holonomic.stop()
+    
+    def move_backward_distance(distance_cm, power):
+        # Calculate the time needed to move the specified distance
+        time_needed = distance_cm / (power * 0.1)  # Adjust the factor as needed
+        holonomic.move_backward(power)
+        sleep(time_needed)  # Convert to milliseconds
+        holonomic.stop()    
+    
+    def turn_right_angle(angle_deg, power):
+        # Calculate the time needed to turn the specified angle
+        time_needed = angle_deg / (power * 0.5)  # Adjust the factor as needed
+        holonomic.turn_right(power)
+        sleep(time_needed)  # Convert to milliseconds
+        holonomic.stop()
+    def turn_left_angle(angle_deg, power):
+        # Calculate the time needed to turn the specified angle
+        time_needed = angle_deg / (power * 0.5)  # Adjust the factor as needed
+        holonomic.turn_left(power)
+        sleep(time_needed)
+        holonomic.stop()
+    
+    def slide_right_distance(distance_cm, power):
+        # Calculate the time needed to slide the specified distance
+        time_needed = distance_cm / (power * 0.1)  # Adjust the factor as needed
+        holonomic.slide_right(power)
+        sleep(time_needed)  # Convert to milliseconds
+        holonomic.stop()
+    def slide_left_distance(distance_cm, power):
+        # Calculate the time needed to slide the specified distance
+        time_needed = distance_cm / (power * 0.1)  # Adjust the factor as needed
+        holonomic.slide_left(power)
+        sleep(time_needed)  # Convert to milliseconds
+        holonomic.stop()
 
 
 class dc_motor:
@@ -210,15 +251,6 @@ class runtime:
             novapi.reset_timer()
     
     def shoot_peem():
-        # if gamepad.is_key_pressed("N1"):
-        #     entrance_feed.on(50, True)
-        #     feeder.on(50, True)
-        # elif gamepad.is_key_pressed("N4"):
-        #     entrance_feed.on(50, False)
-        #     feeder.on(50, False)
-        # elif gamepad.is_key_pressed("+"):
-        #     entrance_feed.off()
-        #     feeder.off()
         
         if gamepad.get_joystick("Ry") > 20:
             entrance_feed.on(70, True)
@@ -283,7 +315,23 @@ class runtime:
 
 class Auto:
     def run():
-        pass
+        angle_left.move_to(-36, 20)
+        angle_right.move_to(-36, 20)
+        left_block.on(100, True)
+        right_block.on(100, False)
+        holonomic.move_forward_distance(29, 255)
+        holonomic.stop()
+        holonomic.slide_left_distance(21, 255)
+        sleep(1.0)
+        # left_block.off()
+        # right_block.off()
+        holonomic.turn_left_angle(100, 200)
+        left_block.on(100, False)
+        right_block.on(100, True)
+        holonomic.move_forward_distance(10, 255)
+        left_block.off()
+        right_block.off()
+        sleep(1000000000)
 
 #Block and Cube Management System
 entrance_feed = dc_motor("DC1")
