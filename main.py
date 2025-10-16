@@ -58,12 +58,12 @@ class sensor:
     
     def filtered_acc(axis: str, size: int = 5):
         if axis == "X": # For moving left/right
-            sensor.acc_x_vals.append(novapi.get_acceleration("X"))
+            sensor.acc_x_vals.append(novapi.get_acceleration("Z"))
             if len(sensor.acc_x_vals) > size:
                 sensor.acc_x_vals.pop(0)
             return sum(sensor.acc_x_vals) / len(sensor.acc_x_vals)
         elif axis == "Y": #For moving forward/backward
-            sensor.acc_y_vals.append(novapi.get_acceleration("Z"))
+            sensor.acc_y_vals.append(novapi.get_acceleration("X"))
             if len(sensor.acc_y_vals) > size:
                 sensor.acc_y_vals.pop(0)
             return sum(sensor.acc_y_vals) / len(sensor.acc_y_vals)
@@ -78,8 +78,8 @@ class holonomic():
     right_back = encoder_motor_class("M5", "INDEX1")
 
     pid = {
-        "vx": PID(1, 0.6, 0.1),
-        "vy": PID(0.5, 0.1, 0.1)
+        "vx": PID(0.46, 0.88, 0.68),
+        "vy": PID(0.2, 0, 0.1)
     }
 
     def motordrive(lf: int, lb: int, rf: int, rb: int):
@@ -87,11 +87,12 @@ class holonomic():
         holonomic.left_back.set_speed(lb)
         holonomic.right_front.set_speed(-rf)
         holonomic.right_back.set_speed(-rb)  
+        
     
     def motorstop():
         holonomic.motordrive(0, 0, 0, 0)
     
-    def drive(vx, vy, wL, deadzone=5):
+    def drive(vx, vy, wL, deadzone=0):
         if math.fabs(vx) < math.fabs(deadzone):
             vx = 0
         if math.fabs(vy) < math.fabs(deadzone):
@@ -102,14 +103,14 @@ class holonomic():
         multiplier = 2
         
         holonomic.pid["vx"].set_setpoint(vx)
-        vx = 5 * holonomic.pid["vx"].update(sensor.filtered_acc("Y"))
+        vx = holonomic.pid["vx"].update(holonomic.pid["vx"].previous_error + sensor.filtered_acc("Y"))
         holonomic.pid["vy"].set_setpoint(vy)
-        vy = 5 * holonomic.pid["vy"].update(sensor.filtered_acc("X"))
+        vy = 5 * holonomic.pid["vy"].update(holonomic.pid["vy"].previous_error + sensor.filtered_acc("X"))
 
-        vFL = (vx + vy + wL) * multiplier * 16
-        vFR = (-vx + vy - wL) * multiplier
-        vBL = (-vx + vy + wL) * multiplier
-        vBR = (vx + vy - wL) * multiplier 
+        vFL = (vx + (vy * 1.2) + wL) * multiplier
+        vFR = (-(vx) + (vy * 1.2) - wL) * multiplier
+        vBL = (-(vx) + (vy * 1.2) + wL) * multiplier
+        vBR = (vx + (vy * 1.2) - wL) * multiplier
 
         vFL = util.restrict(vFL, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
         vFR = util.restrict(vFR, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
@@ -139,46 +140,33 @@ class holonomic():
     def stop():
         holonomic.drive(0, 0, 0)
         
-    #for Auto mode
-    def move_forward_distance(distance_cm, power):
-        # Calculate the time needed to move the specified distance
-        time_needed = distance_cm / (power * 0.1)  # Adjust the factor as needed
-        holonomic.move_forward(power)
-        sleep(time_needed)  # Convert to milliseconds
+
+class auto_backend:
+    def move_forward_distance(distance_cm, speed):
+        holonomic.move_forward(speed)
+        sleep(distance_cm / (speed / 10))  # Simplified time calculation
         holonomic.stop()
-    
-    def move_backward_distance(distance_cm, power):
-        # Calculate the time needed to move the specified distance
-        time_needed = distance_cm / (power * 0.1)  # Adjust the factor as needed
-        holonomic.move_backward(power)
-        sleep(time_needed)  # Convert to milliseconds
+    def move_backward_distance(distance_cm, speed):
+        holonomic.move_backward(speed)
+        sleep(distance_cm / (speed / 10))  # Simplified time calculation
         holonomic.stop()    
+    def turn_right_angle(angle_deg, speed): 
+        holonomic.turn_right(speed)
+        sleep(angle_deg / (speed / 10))  # Simplified time calculation
+        holonomic.stop()
+    def turn_left_angle(angle_deg, speed):
+        holonomic.turn_left(speed)
+        sleep(angle_deg / (speed / 10))  # Simplified time calculation
+        holonomic.stop()
+    def slide_right_distance(distance_cm, speed):
+        holonomic.slide_right(speed)
+        sleep(distance_cm / (speed / 10))  # Simplified time calculation
+        holonomic.stop()
+    def slide_left_distance(distance_cm, speed): 
+        holonomic.slide_left(speed)
+        sleep(distance_cm / (speed / 10))  # Simplified time calculation
+        holonomic.stop()
     
-    def turn_right_angle(angle_deg, power):
-        # Calculate the time needed to turn the specified angle
-        time_needed = angle_deg / (power * 0.5)  # Adjust the factor as needed
-        holonomic.turn_right(power)
-        sleep(time_needed)  # Convert to milliseconds
-        holonomic.stop()
-    def turn_left_angle(angle_deg, power):
-        # Calculate the time needed to turn the specified angle
-        time_needed = angle_deg / (power * 0.5)  # Adjust the factor as needed
-        holonomic.turn_left(power)
-        sleep(time_needed)
-        holonomic.stop()
-    
-    def slide_right_distance(distance_cm, power):
-        # Calculate the time needed to slide the specified distance
-        time_needed = distance_cm / (power * 0.1)  # Adjust the factor as needed
-        holonomic.slide_right(power)
-        sleep(time_needed)  # Convert to milliseconds
-        holonomic.stop()
-    def slide_left_distance(distance_cm, power):
-        # Calculate the time needed to slide the specified distance
-        time_needed = distance_cm / (power * 0.1)  # Adjust the factor as needed
-        holonomic.slide_left(power)
-        sleep(time_needed)  # Convert to milliseconds
-        holonomic.stop()
 
 
 class dc_motor:
@@ -205,19 +193,15 @@ class brushless_motor:
     # Default brushless motor port
     bl_port = "BL1"
 
-    BL_POWER_MAX = 100
-    BL_POWER_MIN = 70   
+    BL_POWER_MAX = 110
 
     # Initialize brushless motor with a specific port
     def __init__(self, port: str) -> None:
         self.bl_port = port
         
     # Method to turn on the brushless motor
-    def on_max(self) -> None:
+    def on(self) -> None:
         power_expand_board.set_power(self.bl_port, self.BL_POWER_MAX)
-    
-    def on_half(self) -> None:
-        power_expand_board.set_power(self.bl_port, self.BL_POWER_MIN)
         
     # Method to turn off the brushless motor
     def off(self) -> None:
@@ -268,16 +252,14 @@ class runtime:
             front_input.off()
             disc_stock.off()
         #Shooter control
-        if gamepad.is_key_pressed("R1"):
-            bl_2.on_max()
-        elif gamepad.is_key_pressed("L1"):
-            bl_2.on_half()
+        if gamepad.is_key_pressed("R1") or gamepad.is_key_pressed("L1"):
+            bl_2.on()
         else:
             bl_2.off()
         
         angle = 0
         if gamepad.is_key_pressed("N2"):            
-            angle = angle - 36
+            angle = angle - 58
         elif gamepad.is_key_pressed("N3"):
             angle = angle + 28
         else:
@@ -319,18 +301,14 @@ class Auto:
         angle_right.move_to(-36, 20)
         left_block.on(100, True)
         right_block.on(100, False)
-        holonomic.move_forward_distance(29, 255)
-        holonomic.stop()
-        holonomic.slide_left_distance(21, 255)
-        sleep(1.0)
-        # left_block.off()
-        # right_block.off()
-        holonomic.turn_left_angle(100, 200)
+        auto_backend.move_forward_distance(9, 100)
+        auto_backend.slide_left_distance(9, 100)
+        auto_backend.move_forward_distance(4, 100)
+        sleep(0.9)
+        auto_backend.move_backward_distance(4, 100)
+        auto_backend.turn_left_angle(10, 100)
         left_block.on(100, False)
         right_block.on(100, True)
-        holonomic.move_forward_distance(10, 255)
-        left_block.off()
-        right_block.off()
         sleep(1000000000)
 
 #Block and Cube Management System
@@ -353,6 +331,7 @@ right_block = dc_motor("DC5")
 
 while True:
     if power_manage_module.is_auto_mode():
+        status.show("AUTO", wait=False)
         Auto.run()
     else:
         runtime.move()

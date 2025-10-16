@@ -1,0 +1,912 @@
+Start logging at port: COM5[2025-10-16 10:29:16]: 
+[2025-10-16 10:29:16]: -- bootloader running! --
+[2025-10-16 10:29:16]: -- NovaPi app program --
+[2025-10-16 10:29:16]: -- Firmware Version: 41.02.040-ht5 --
+[2025-10-16 10:29:16]: -- Compiled: Aug  1 2025 15:58:38 --
+[2025-10-16 10:29:16]: -- mount filesystem sucessful --
+[2025-10-16 10:29:17]: ['main.py', 'csv']
+[2025-10-16 10:29:17]: run main.py
+[2025-10-16 10:29:17]: download mbuild success1
+[2025-10-16 10:29:17]: 0 0 0 0
+[2025-10-16 10:29:17]: Input parameters are out of range
+[2025-10-16 10:29:17]: Input parameters are out of range
+[2025-10-16 10:29:17]: 0 0 0 0
+[2025-10-16 10:29:17]: Input parameters are out of range
+[2025-10-16 10:29:17]: Input parameters are out of range
+[2025-10-16 10:29:17]: 0 0 0 0
+[2025-10-16 10:29:17]: Input parameters are out of range
+[2025-10-16 10:29:17]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: 0 0 0 0
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:18]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: 0 0 0 0
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:19]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:20]: 0 0 0 0
+[2025-10-16 10:29:20]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: 0 0 0 0
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:21]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: 0 0 0 0
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:22]: Input parameters are out of range
+[2025-10-16 10:29:23]: 0 0 0 0
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 0 0 0 0
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 0 0 0 0
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 0 -71 79 -150
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 150 -246 246 -294
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 286 -238 238 -222
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 222 -262 262 -246
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 246 -254 254 -246
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 246 -254 254 -246
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 254 -246 254 -254
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 246 -246 246 -254
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 246 -254 246 -246
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 254 -246 254 -246
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: 246 -246 254 -246
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:23]: Input parameters are out of range
+[2025-10-16 10:29:24]: 238 -254 254 -246
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 238 -246 246 -254
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 254 -246 246 -246
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 254 -254 246 -238
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 254 -254 238 -254
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 246 -238 254 -254
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 246 -238 254 -246
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 254 -254 254 -254
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 254 -254 246 -254
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 246 -254 246 -246
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 246 -254 254 -254
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 246 -254 254 -246
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: 246 -254 246 -238
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:24]: Input parameters are out of range
+[2025-10-16 10:29:25]: 246 -246 254 -246
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 254 -246 246 -246
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 254 -254 254 -254
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 262 -254 254 -246
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 246 -246 246 -262
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 254 -246 246 -246
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 246 -246 238 -254
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 254 -254 254 -254
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 246 -246 246 -246
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 246 -254 246 -246
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 254 -254 246 -254
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 262 -254 254 -246
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 254 -246 246 -254
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: 254 -246 254 -254
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:25]: Input parameters are out of range
+[2025-10-16 10:29:26]: 246 -246 246 -246
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 254 -246 246 -246
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 246 -254 254 -254
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 254 -254 246 -254
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 254 -254 254 -246
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 254 -254 246 -246
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 254 -246 246 -254
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 246 -143 127 -143
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 0 7 -15 0
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 0 0 0 0
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: 0 0 0 0
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: -23 71 -95 143
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: -190 246 -262 294
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: -254 230 -222 246
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:26]: Input parameters are out of range
+[2025-10-16 10:29:27]: -254 254 -254 254
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -254 246 -246 254
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -238 246 -254 238
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -246 262 -254 246
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -254 254 -254 246
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -262 254 -238 254
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -246 254 -246 246
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -246 254 -246 246
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -254 246 -254 246
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -246 254 -246 254
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -254 246 -246 262
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -246 246 -246 254
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: -254 254 -246 254
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:27]: Input parameters are out of range
+[2025-10-16 10:29:28]: -254 254 -246 246
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -246 254 -246 254
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -246 254 -254 246
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -246 246 -254 254
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -246 246 -254 254
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -246 254 -254 254
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -246 246 -254 246
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -246 246 -254 254
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -246 254 -254 246
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -254 254 -254 246
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -262 246 -246 254
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -254 246 -246 254
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -246 246 -254 246
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: -238 182 -158 198
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:28]: Input parameters are out of range
+[2025-10-16 10:29:29]: -55 0 15 -7
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 7 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: 0 0 0 0
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:29]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: 0 0 0 0
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:30]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: 0 0 0 0
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:31]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: 0 0 0 0
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:32]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: 0 0 0 0
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:33]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: 0 0 0 0
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:34]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: 0 0 0 0
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:35]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:36]: 0 0 0 0
+[2025-10-16 10:29:36]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: 0 0 0 0
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:37]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: 0 0 0 0
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:38]: Input parameters are out of range
+[2025-10-16 10:29:39]: 0 0 0 0
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: 0 0 0 0
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: 0 0 0 0
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: 0 0 0 0
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: 0 0 0 0
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: 0 0 0 0
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: 0 0 0 0
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: 0 0 0 0
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: 0 0 0 0
+[2025-10-16 10:29:39]: Input parameters are out of range
+[2025-10-16 10:29:39]: Input parameters are out of range
