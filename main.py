@@ -11,7 +11,7 @@ from mbuild.led_matrix import led_matrix_class
 
 status = led_matrix_class("PORT3", "INDEX1")
 class PID:
-    def __init__(self, Kp, Ki, Kd, setpoint=0):
+    def __init__(self, Kp,  Ki, Kd, setpoint=0):
         self.Kp = Kp  # Proportional gain
         self.Ki = Ki  # Integral gain
         self.Kd = Kd  # Derivative gain
@@ -52,22 +52,6 @@ class util:
     def restrict(val, minimum, maximum):
         return max(min(val, maximum), minimum)
         
-class sensor:
-    acc_x_vals = []
-    acc_y_vals = []
-    
-    def filtered_acc(axis: str, size: int = 5):
-        if axis == "X": # For moving left/right
-            sensor.acc_x_vals.append(novapi.get_acceleration("Z"))
-            if len(sensor.acc_x_vals) > size:
-                sensor.acc_x_vals.pop(0)
-            return sum(sensor.acc_x_vals) / len(sensor.acc_x_vals)
-        elif axis == "Y": #For moving forward/backward
-            sensor.acc_y_vals.append(novapi.get_acceleration("X"))
-            if len(sensor.acc_y_vals) > size:
-                sensor.acc_y_vals.pop(0)
-            return sum(sensor.acc_y_vals) / len(sensor.acc_y_vals)
-    
 class holonomic():    
 
     MAX_SPEED = 255  # Maximum speed for the motors
@@ -77,10 +61,13 @@ class holonomic():
     left_back = encoder_motor_class("M4", "INDEX1")
     right_back = encoder_motor_class("M5", "INDEX1")
 
-    pid = {
-        "vx": PID(0.46, 0.88, 0.68),
-        "vy": PID(0.2, 0, 0.1)
+    pids = {
+        "lf": PID(Kp=1, Ki=0, Kd=0),
+        "lb": PID(Kp=1, Ki=0, Kd=0),
+        "rf": PID(Kp=0.9, Ki=0, Kd=0),
+        "rb": PID(Kp=0.9, Ki=0, Kd=0),
     }
+
 
     def motordrive(lf: int, lb: int, rf: int, rb: int):
         holonomic.left_front.set_speed(lf)
@@ -92,32 +79,38 @@ class holonomic():
     def motorstop():
         holonomic.motordrive(0, 0, 0, 0)
     
-    def drive(vx, vy, wL, deadzone=0):
-        if math.fabs(vx) < math.fabs(deadzone):
-            vx = 0
-        if math.fabs(vy) < math.fabs(deadzone):
-            vy = 0
-        if math.fabs(wL) < math.fabs(deadzone):
-            wL = 0
-            
-        multiplier = 2
-        
-        holonomic.pid["vx"].set_setpoint(vx)
-        vx = holonomic.pid["vx"].update(holonomic.pid["vx"].previous_error + sensor.filtered_acc("Y"))
-        holonomic.pid["vy"].set_setpoint(vy)
-        vy = 5 * holonomic.pid["vy"].update(holonomic.pid["vy"].previous_error + sensor.filtered_acc("X"))
+    def drive(vx, vy, wL, deadzone=5):
+        if abs(vx) < deadzone: vx = 0
+        if abs(vy) < deadzone: vy = 0
+        if abs(wL) < deadzone: wL = 0
+
+        multiplier = 2.1 #PID Speed Multiplier
 
         vFL = (vx + (vy * 1.2) + wL) * multiplier
         vFR = (-(vx) + (vy * 1.2) - wL) * multiplier
         vBL = (-(vx) + (vy * 1.2) + wL) * multiplier
         vBR = (vx + (vy * 1.2) - wL) * multiplier
+        
+        
+        holonomic.pids["lf"].set_setpoint(vFL)
+        holonomic.pids["lb"].set_setpoint(vBL)
+        holonomic.pids["rf"].set_setpoint(vFR)
+        holonomic.pids["rb"].set_setpoint(vBR)
 
-        vFL = util.restrict(vFL, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
-        vFR = util.restrict(vFR, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
-        vBL = util.restrict(vBL, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
-        vBR = util.restrict(vBR, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
+        vFL_out = holonomic.pids["lf"].update(-holonomic.left_front.get_value("speed"))
+        vBL_out = holonomic.pids["lb"].update(-holonomic.left_back.get_value("speed"))
+        vFR_out = holonomic.pids["rf"].update(holonomic.right_front.get_value("speed"))
+        vBR_out = holonomic.pids["rb"].update(holonomic.right_back.get_value("speed"))
 
-        holonomic.motordrive(vFL, vBL, vFR, vBR)
+    
+        vFL_out = util.restrict(vFL_out, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
+        vFR_out = util.restrict(vFR_out, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
+        vBL_out = util.restrict(vBL_out, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
+        vBR_out = util.restrict(vBR_out, -holonomic.MAX_SPEED, holonomic.MAX_SPEED)
+
+    
+        holonomic.motordrive(vFL_out, vBL_out, vFR_out, vBR_out)
+
 
     def move_forward(power):
         holonomic.drive(0, power, 0)
@@ -142,31 +135,120 @@ class holonomic():
         
 
 class auto_backend:
-    def move_forward_distance(distance_cm, speed):
-        holonomic.move_forward(speed)
-        sleep(distance_cm / (speed / 10))  # Simplified time calculation
-        holonomic.stop()
-    def move_backward_distance(distance_cm, speed):
-        holonomic.move_backward(speed)
-        sleep(distance_cm / (speed / 10))  # Simplified time calculation
-        holonomic.stop()    
-    def turn_right_angle(angle_deg, speed): 
-        holonomic.turn_right(speed)
-        sleep(angle_deg / (speed / 10))  # Simplified time calculation
-        holonomic.stop()
-    def turn_left_angle(angle_deg, speed):
-        holonomic.turn_left(speed)
-        sleep(angle_deg / (speed / 10))  # Simplified time calculation
-        holonomic.stop()
-    def slide_right_distance(distance_cm, speed):
-        holonomic.slide_right(speed)
-        sleep(distance_cm / (speed / 10))  # Simplified time calculation
-        holonomic.stop()
-    def slide_left_distance(distance_cm, speed): 
-        holonomic.slide_left(speed)
-        sleep(distance_cm / (speed / 10))  # Simplified time calculation
-        holonomic.stop()
+    # Robot physical constants
+    radius = 0.03   # 30 mm wheel radius
+    Length = 0.10   # Half of robot length (m)
+    Width  = 0.08   # Half of robot width (m)
+
+    @staticmethod
+    def forward_kinematic():
+        # Get wheel speeds (rad/s)
+        w_fl = holonomic.left_front.get_value("speed")
+        w_fr = holonomic.right_front.get_value("speed")
+        w_rl = holonomic.left_back.get_value("speed")
+        w_rr = holonomic.right_back.get_value("speed")
+
+        # X-axis linear velocity (m/s)
+        Vx = (auto_backend.radius / 4) * (w_fl + w_fr + w_rl + w_rr)
+
+        # Y-axis linear velocity (m/s)
+        Vy = (auto_backend.radius / 4) * (-w_fl + w_fr + w_rl - w_rr)
+
+        # Angular velocity around Z-axis (rad/s)
+        Wz = (auto_backend.radius / (4 * (auto_backend.Length + auto_backend.Width))) * (-w_fl + w_fr - w_rl + w_rr)
+
+        return Vx, Vy, Wz
     
+    def move_forward_distance(distance: float, power: int):
+        target_distance = distance  # meters
+        Kp = 50  # Proportional gain for distance control
+        tolerance = 0.01  # Acceptable error (m)
+
+        traveled_distance = 0.0
+        prev_time = novapi.timer()
+
+        while abs(traveled_distance - target_distance) > tolerance:
+            current_time = novapi.timer()
+            dt = current_time - prev_time
+            prev_time = current_time
+
+            # อ่านความเร็วจากล้อ
+            Vx, Vy, Wz = auto_backend.forward_kinematic()
+
+            # เดินหน้า ใช้แกน X (เพราะสูตรคุณกำหนด Vx คือหน้า/หลัง)
+            traveled_distance += Vx * dt
+
+            # คำนวณ error
+            error = target_distance - traveled_distance
+            control_signal = Kp * error
+
+            # จำกัดกำลังไม่ให้เกิน max power
+            control_signal = util.restrict(control_signal, -power, power)
+
+            # ชะลอความเร็วใกล้ถึงเป้าหมาย
+            if abs(error) < 0.05:
+                control_signal *= 0.5
+
+            # ส่งคำสั่งไปที่ระบบขับเคลื่อน
+            holonomic.move_forward(control_signal)
+
+        holonomic.stop()
+        sleep(0.1)
+        
+    @staticmethod
+    def slide_left_distance(distance: float, power: int):
+        target_distance = distance
+        Kp = 50
+        tolerance = 0.01
+        traveled_distance = 0.0
+        prev_time = novapi.timer()
+
+        while abs(traveled_distance - target_distance) > tolerance:
+            current_time = novapi.timer()
+            dt = current_time - prev_time
+            prev_time = current_time
+
+            Vx, Vy, Wz = auto_backend.forward_kinematic()
+            traveled_distance += abs(Vy) * dt  # ใช้ Vy เพราะเลื่อนข้าง
+
+            error = target_distance - traveled_distance
+            control_signal = Kp * error
+            control_signal = util.restrict(control_signal, -power, power)
+
+            if abs(error) < 0.05:
+                control_signal *= 0.5
+
+            holonomic.slide_left(control_signal)
+        holonomic.stop()
+        sleep(0.1)
+    @staticmethod
+    def turn_left_angle(angle_deg: float, power: int):
+        target_angle = math.radians(angle_deg)
+        Kp = 100
+        tolerance = math.radians(2)
+
+        turned_angle = 0.0
+        prev_time = novapi.timer()
+
+        while abs(turned_angle - target_angle) > tolerance:
+            current_time = novapi.timer()
+            dt = current_time - prev_time
+            prev_time = current_time
+
+            Vx, Vy, Wz = auto_backend.forward_kinematic()
+            turned_angle += Wz * dt
+
+            error = target_angle - turned_angle
+            control_signal = Kp * error
+            control_signal = util.restrict(control_signal, -power, power)
+
+            if abs(error) < math.radians(5):
+                control_signal *= 0.5
+
+            holonomic.turn_left(control_signal)
+        holonomic.stop()
+        sleep(0.1)
+
 
 
 class dc_motor:
@@ -235,7 +317,6 @@ class runtime:
             novapi.reset_timer()
     
     def shoot_peem():
-        
         if gamepad.get_joystick("Ry") > 20:
             entrance_feed.on(70, True)
             feeder.on(70, True)
@@ -297,19 +378,20 @@ class runtime:
 
 class Auto:
     def run():
-        angle_left.move_to(-36, 20)
-        angle_right.move_to(-36, 20)
-        left_block.on(100, True)
-        right_block.on(100, False)
-        auto_backend.move_forward_distance(9, 100)
-        auto_backend.slide_left_distance(9, 100)
-        auto_backend.move_forward_distance(4, 100)
-        sleep(0.9)
-        auto_backend.move_backward_distance(4, 100)
-        auto_backend.turn_left_angle(10, 100)
-        left_block.on(100, False)
-        right_block.on(100, True)
-        sleep(1000000000)
+        # angle_left.move_to(-36, 20)
+        # angle_right.move_to(-36, 20)
+        # left_block.on(100, True)
+        # right_block.on(100, False)
+        # auto_backend.move_forward_distance(9, 100)
+        # auto_backend.slide_left_distance(9, 100)
+        # auto_backend.move_forward_distance(4, 100)
+        # sleep(0.9)
+        # auto_backend.move_backward_distance(4, 100)
+        # auto_backend.turn_left_angle(10, 100)
+        # left_block.on(100, False)
+        # right_block.on(100, True)
+        # sleep(1000000000)
+        pass
 
 #Block and Cube Management System
 entrance_feed = dc_motor("DC1")
@@ -325,7 +407,6 @@ bl_2 = brushless_motor("BL1")
 angle_right = smartservo_class("M1", "INDEX1")
 angle_left = smartservo_class("M1", "INDEX2") # only for angles
 #utility
-Laser = dc_motor("DC8")
 left_block = dc_motor("DC4")
 right_block = dc_motor("DC5")
 
@@ -341,10 +422,7 @@ while True:
             if runtime.CTRL_MODE == 0:
                 status.show("SHOOT", wait=False)
                 runtime.shoot_peem()
-                #Turn Laser on for shooting mode
-                Laser.on(10, True)
             else:
                 status.show("GRIPPER", wait=False)
                 runtime.gripper_peem()
-                #Turn Laser off for gripper mode
-                Laser.off()
+        
