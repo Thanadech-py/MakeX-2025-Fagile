@@ -54,18 +54,19 @@ class util:
         
 class holonomic():    
 
-    MAX_SPEED = 255  # Maximum speed for the motors
+    MAX_SPEED = 400  # Maximum speed for the motors
 
     left_front = encoder_motor_class("M3", "INDEX1")
     right_front = encoder_motor_class("M1", "INDEX1")
     left_back = encoder_motor_class("M4", "INDEX1")
     right_back = encoder_motor_class("M5", "INDEX1")
+    
 
     pids = {
-        "lf": PID(Kp=1, Ki=0, Kd=0),
-        "lb": PID(Kp=1, Ki=0, Kd=0),
-        "rf": PID(Kp=0.9, Ki=0, Kd=0),
-        "rb": PID(Kp=0.9, Ki=0, Kd=0),
+        "lf": PID(Kp=0.25, Ki=0, Kd=0.020),
+        "lb": PID(Kp=0.2, Ki=0, Kd=0.015),
+        "rf": PID(Kp=0.25, Ki=0, Kd=0.020),
+        "rb": PID(Kp=0.2, Ki=0, Kd=0.015),
     }
 
 
@@ -84,12 +85,12 @@ class holonomic():
         if abs(vy) < deadzone: vy = 0
         if abs(wL) < deadzone: wL = 0
 
-        multiplier = 2.1 #PID Speed Multiplier
+        multiplier = 5 #PID Speed Multiplier
 
-        vFL = (vx + (vy * 1.2) + wL) * multiplier
-        vFR = (-(vx) + (vy * 1.2) - wL) * multiplier
-        vBL = (-(vx) + (vy * 1.2) + wL) * multiplier
-        vBR = (vx + (vy * 1.2) - wL) * multiplier
+        vFL = (vx + (vy * 2) + wL) * multiplier
+        vFR = (-(vx) + (vy * 2) - wL) * multiplier
+        vBL = (-(vx) + (vy * 2) + wL) * multiplier
+        vBR = (vx + (vy * 2) - wL) * multiplier
         
         
         holonomic.pids["lf"].set_setpoint(vFL)
@@ -133,124 +134,7 @@ class holonomic():
     def stop():
         holonomic.drive(0, 0, 0)
         
-
-class auto_backend:
-    # Robot physical constants
-    radius = 0.03   # 30 mm wheel radius
-    Length = 0.10   # Half of robot length (m)
-    Width  = 0.08   # Half of robot width (m)
-
-    @staticmethod
-    def forward_kinematic():
-        # Get wheel speeds (rad/s)
-        w_fl = holonomic.left_front.get_value("speed")
-        w_fr = holonomic.right_front.get_value("speed")
-        w_rl = holonomic.left_back.get_value("speed")
-        w_rr = holonomic.right_back.get_value("speed")
-
-        # X-axis linear velocity (m/s)
-        Vx = (auto_backend.radius / 4) * (w_fl + w_fr + w_rl + w_rr)
-
-        # Y-axis linear velocity (m/s)
-        Vy = (auto_backend.radius / 4) * (-w_fl + w_fr + w_rl - w_rr)
-
-        # Angular velocity around Z-axis (rad/s)
-        Wz = (auto_backend.radius / (4 * (auto_backend.Length + auto_backend.Width))) * (-w_fl + w_fr - w_rl + w_rr)
-
-        return Vx, Vy, Wz
-    
-    def move_forward_distance(distance: float, power: int):
-        target_distance = distance  # meters
-        Kp = 50  # Proportional gain for distance control
-        tolerance = 0.01  # Acceptable error (m)
-
-        traveled_distance = 0.0
-        prev_time = novapi.timer()
-
-        while abs(traveled_distance - target_distance) > tolerance:
-            current_time = novapi.timer()
-            dt = current_time - prev_time
-            prev_time = current_time
-
-            # อ่านความเร็วจากล้อ
-            Vx, Vy, Wz = auto_backend.forward_kinematic()
-
-            # เดินหน้า ใช้แกน X (เพราะสูตรคุณกำหนด Vx คือหน้า/หลัง)
-            traveled_distance += Vx * dt
-
-            # คำนวณ error
-            error = target_distance - traveled_distance
-            control_signal = Kp * error
-
-            # จำกัดกำลังไม่ให้เกิน max power
-            control_signal = util.restrict(control_signal, -power, power)
-
-            # ชะลอความเร็วใกล้ถึงเป้าหมาย
-            if abs(error) < 0.05:
-                control_signal *= 0.5
-
-            # ส่งคำสั่งไปที่ระบบขับเคลื่อน
-            holonomic.move_forward(control_signal)
-
-        holonomic.stop()
-        sleep(0.1)
-        
-    @staticmethod
-    def slide_left_distance(distance: float, power: int):
-        target_distance = distance
-        Kp = 50
-        tolerance = 0.01
-        traveled_distance = 0.0
-        prev_time = novapi.timer()
-
-        while abs(traveled_distance - target_distance) > tolerance:
-            current_time = novapi.timer()
-            dt = current_time - prev_time
-            prev_time = current_time
-
-            Vx, Vy, Wz = auto_backend.forward_kinematic()
-            traveled_distance += abs(Vy) * dt  # ใช้ Vy เพราะเลื่อนข้าง
-
-            error = target_distance - traveled_distance
-            control_signal = Kp * error
-            control_signal = util.restrict(control_signal, -power, power)
-
-            if abs(error) < 0.05:
-                control_signal *= 0.5
-
-            holonomic.slide_left(control_signal)
-        holonomic.stop()
-        sleep(0.1)
-    @staticmethod
-    def turn_left_angle(angle_deg: float, power: int):
-        target_angle = math.radians(angle_deg)
-        Kp = 100
-        tolerance = math.radians(2)
-
-        turned_angle = 0.0
-        prev_time = novapi.timer()
-
-        while abs(turned_angle - target_angle) > tolerance:
-            current_time = novapi.timer()
-            dt = current_time - prev_time
-            prev_time = current_time
-
-            Vx, Vy, Wz = auto_backend.forward_kinematic()
-            turned_angle += Wz * dt
-
-            error = target_angle - turned_angle
-            control_signal = Kp * error
-            control_signal = util.restrict(control_signal, -power, power)
-
-            if abs(error) < math.radians(5):
-                control_signal *= 0.5
-
-            holonomic.turn_left(control_signal)
-        holonomic.stop()
-        sleep(0.1)
-
-
-
+   
 class dc_motor:
     # Default DC port
     dc_port = "DC1"
@@ -378,20 +262,8 @@ class runtime:
 
 class Auto:
     def run():
-        # angle_left.move_to(-36, 20)
-        # angle_right.move_to(-36, 20)
-        # left_block.on(100, True)
-        # right_block.on(100, False)
-        # auto_backend.move_forward_distance(9, 100)
-        # auto_backend.slide_left_distance(9, 100)
-        # auto_backend.move_forward_distance(4, 100)
-        # sleep(0.9)
-        # auto_backend.move_backward_distance(4, 100)
-        # auto_backend.turn_left_angle(10, 100)
-        # left_block.on(100, False)
-        # right_block.on(100, True)
-        # sleep(1000000000)
         pass
+
 
 #Block and Cube Management System
 entrance_feed = dc_motor("DC1")
