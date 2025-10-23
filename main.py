@@ -1,3 +1,9 @@
+"""Fragile Main Program
+This is the main program of the Fragile Team From SuksanareeWittaya where we participate in MakeX Robotics Competition. 
+The program includes holonomic drive control,
+DC motor and brushless motor management, and runtime operations for shooting and gripper control.
+"""
+
 # Import necessary modules
 import novapi
 import math
@@ -53,20 +59,21 @@ class util:
         return max(min(val, maximum), minimum)
         
 class holonomic():    
-
-    MAX_SPEED = 400  # Maximum speed for the motors
+    
+    # Maximum speed for the motors
+    MAX_SPEED = 500  
 
     left_front = encoder_motor_class("M3", "INDEX1")
     right_front = encoder_motor_class("M1", "INDEX1")
     left_back = encoder_motor_class("M4", "INDEX1")
     right_back = encoder_motor_class("M5", "INDEX1")
     
-
+    #tuned PID values for each motor
     pids = {
-        "lf": PID(Kp=0.25, Ki=0, Kd=0.020),
-        "lb": PID(Kp=0.2, Ki=0, Kd=0.015),
-        "rf": PID(Kp=0.25, Ki=0, Kd=0.020),
-        "rb": PID(Kp=0.2, Ki=0, Kd=0.015),
+        "lf": PID(Kp=0.9125, Ki=0, Kd=0.55),
+        "lb": PID(Kp=0.65, Ki=0, Kd=0.0125),
+        "rf": PID(Kp=1.0625, Ki=0, Kd=0),
+        "rb": PID(Kp=0.6, Ki=0.0018, Kd=0.05),
     }
 
 
@@ -85,7 +92,7 @@ class holonomic():
         if abs(vy) < deadzone: vy = 0
         if abs(wL) < deadzone: wL = 0
 
-        multiplier = 5 #PID Speed Multiplier
+        multiplier = 3 #PID Speed Multiplier
 
         vFL = (vx + (vy * 2) + wL) * multiplier
         vFR = (-(vx) + (vy * 2) - wL) * multiplier
@@ -133,6 +140,34 @@ class holonomic():
     
     def stop():
         holonomic.drive(0, 0, 0)
+        
+        
+class Auto_backend:
+    def __init__(self, r=0.03, L=0.14, W=0.20): #Units in meters
+        self.r = r
+        self.L = L
+        self.W = W
+
+    def update(self):
+        rpm_to_rad = 2 * math.pi / 60
+
+        W1 = holonomic.left_front.get_value("speed") * rpm_to_rad
+        W2 = holonomic.right_front.get_value("speed") * rpm_to_rad
+        W3 = holonomic.left_back.get_value("speed") * rpm_to_rad
+        W4 = holonomic.right_back.get_value("speed") * rpm_to_rad
+
+        self.vx = (self.r / 4) * (W1 + W2 + W3 + W4)   # m/s
+        self.vy = (self.r / 4) * (-W1 + W2 + W3 - W4)  # m/s
+        self.wL = (self.r / (4 * (self.L + self.W))) * (-W1 + W2 - W3 + W4)  # rad/s
+
+        return self.vx, self.vy, self.wL
+
+    def move_forward(self, distance, power):
+        holonomic.move_forward(power)
+        target_x = self.vx * novapi.timer() + distance
+        while abs(target_x - self.vx * novapi.timer()) > 0.01:
+            novapi.delay(10)
+        holonomic.stop()
         
    
 class dc_motor:
@@ -262,7 +297,9 @@ class runtime:
 
 class Auto:
     def run():
-        pass
+        Auto_backend.move_forward(0.5, 200)
+        
+        return holonomic.motorstop()
 
 
 #Block and Cube Management System
@@ -284,7 +321,7 @@ right_block = dc_motor("DC5")
 
 while True:
     if power_manage_module.is_auto_mode():
-        status.show("AUTO", wait=False)
+        status.show("A", wait=False)
         Auto.run()
     else:
         runtime.move()
@@ -292,9 +329,9 @@ while True:
             runtime.change_mode()
         else:
             if runtime.CTRL_MODE == 0:
-                status.show("SHOOT", wait=False)
+                status.show("S", wait=False)
                 runtime.shoot_peem()
             else:
-                status.show("GRIPPER", wait=False)
+                status.show("G", wait=False)
                 runtime.gripper_peem()
         
