@@ -16,6 +16,8 @@ from mbuild import power_manage_module
 from mbuild.led_matrix import led_matrix_class
 
 status = led_matrix_class("PORT3", "INDEX1")
+
+
 class PID:
     def __init__(self, Kp,  Ki, Kd, setpoint=0):
         self.Kp = Kp  # Proportional gain
@@ -70,10 +72,10 @@ class holonomic():
     
     #tuned PID values for each motor
     pids = {
-        "lf": PID(Kp=0.9125, Ki=0, Kd=0.55),
-        "lb": PID(Kp=0.65, Ki=0, Kd=0.0125),
-        "rf": PID(Kp=1.0625, Ki=0, Kd=0),
-        "rb": PID(Kp=0.6, Ki=0.0018, Kd=0.05),
+        "lf": PID(Kp=0.55, Ki=0, Kd=0.055),
+        "lb": PID(Kp=0.7, Ki=0, Kd=0.055),
+        "rf": PID(Kp=0.75, Ki=0, Kd=0.055),
+        "rb": PID(Kp=0.65, Ki=0, Kd=0.055),
     }
 
 
@@ -94,10 +96,10 @@ class holonomic():
 
         multiplier = 3 #PID Speed Multiplier
 
-        vFL = (vx + (vy * 2) + wL) * multiplier
-        vFR = (-(vx) + (vy * 2) - wL) * multiplier
-        vBL = (-(vx) + (vy * 2) + wL) * multiplier
-        vBR = (vx + (vy * 2) - wL) * multiplier
+        vFL = (vx + vy  + wL) * multiplier
+        vFR = (-(vx) + vy - wL) * multiplier
+        vBL = (-(vx) + vy + wL) * multiplier
+        vBR = (vx + vy - wL) * multiplier
         
         
         holonomic.pids["lf"].set_setpoint(vFL)
@@ -207,6 +209,24 @@ class brushless_motor:
     # Method to turn off the brushless motor
     def off(self) -> None:
         power_expand_board.stop(self.bl_port)
+        
+        
+#Block and Cube Management System
+entrance_feed = dc_motor("DC1")
+feeder = dc_motor("DC2")
+front_input = dc_motor("DC3")
+disc_stock = dc_motor("DC6")
+#lift and gripper
+lift = encoder_motor_class("M6", "INDEX1")
+gripper = dc_motor("DC7")
+#shooting
+bl_2 = brushless_motor("BL1")
+#shooting angle
+angle_right = smartservo_class("M1", "INDEX1")
+angle_left = smartservo_class("M1", "INDEX2") # only for angles
+#utility
+left_block = dc_motor("DC4")
+right_block = dc_motor("DC5")
       
 
 class runtime:
@@ -223,7 +243,9 @@ class runtime:
         elif gamepad.is_key_pressed("Right"):
             holonomic.turn_right(holonomic.MAX_SPEED)
         elif abs(gamepad.get_joystick("Lx")) > 20:
-            holonomic.drive(-gamepad.get_joystick("Lx"), 0, 0)
+            holonomic.slide_left(gamepad.get_joystick("Lx"))
+        elif abs(gamepad.get_joystick("Lx")) < -20:
+            holonomic.slide_right(-gamepad.get_joystick("Lx"))
         else :
             holonomic.stop()
 
@@ -298,26 +320,8 @@ class runtime:
 class Auto:
     def run():
         Auto_backend.move_forward(0.5, 200)
-        
         return holonomic.motorstop()
 
-
-#Block and Cube Management System
-entrance_feed = dc_motor("DC1")
-feeder = dc_motor("DC2")
-front_input = dc_motor("DC3")
-disc_stock = dc_motor("DC6")
-#lift and gripper
-lift = encoder_motor_class("M6", "INDEX1")
-gripper = dc_motor("DC7")
-#shooting
-bl_2 = brushless_motor("BL1")
-#shooting angle
-angle_right = smartservo_class("M1", "INDEX1")
-angle_left = smartservo_class("M1", "INDEX2") # only for angles
-#utility
-left_block = dc_motor("DC4")
-right_block = dc_motor("DC5")
 
 while True:
     if power_manage_module.is_auto_mode():
