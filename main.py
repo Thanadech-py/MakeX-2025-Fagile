@@ -1,9 +1,3 @@
-"""Fragile Main Program
-This is the main program of the Fragile Team From SuksanareeWittaya where we participate in MakeX Robotics Competition. 
-The program includes holonomic drive control,
-DC motor and brushless motor management, and runtime operations for shooting and gripper control.
-"""
-
 # Import necessary modules
 import novapi
 import math
@@ -72,10 +66,10 @@ class holonomic():
     
     #tuned PID values for each motor
     pids = {
-        "lf": PID(Kp=0.55, Ki=0, Kd=0.055),
-        "lb": PID(Kp=0.7, Ki=0, Kd=0.055),
-        "rf": PID(Kp=0.75, Ki=0, Kd=0.055),
-        "rb": PID(Kp=0.65, Ki=0, Kd=0.055),
+        "lf": PID(Kp=0.55, Ki=0.02, Kd=0.055),
+        "lb": PID(Kp=0.7, Ki=0.02, Kd=0.055),
+        "rf": PID(Kp=0.75, Ki=0.02, Kd=0.055),
+        "rb": PID(Kp=0.65, Ki=0.02, Kd=0.055),
     }
 
 
@@ -139,39 +133,35 @@ class holonomic():
 
     def turn_left(power):
         holonomic.drive(0, 0, -power)
+        
+class auto_backend:
+    def move_forward_distance(distance_cm, speed):
+        holonomic.move_forward(speed)
+        sleep(distance_cm / (speed / 10))  # Simplified time calculation
+        holonomic.motorstop()
+    def move_backward_distance(distance_cm, speed):
+        holonomic.move_backward(speed)
+        sleep(distance_cm / (speed / 10))  # Simplified time calculation
+        holonomic.motorstop()    
+    def turn_right_angle(angle_deg, speed): 
+        holonomic.turn_right(speed)
+        sleep(angle_deg / (speed / 10))  # Simplified time calculation
+        holonomic.motorstop()
+    def turn_left_angle(angle_deg, speed):
+        holonomic.turn_left(speed)
+        sleep(angle_deg / (speed / 10))  # Simplified time calculation
+        holonomic.motorstop()
+    def slide_right_distance(distance_cm, speed):
+        holonomic.slide_right(speed)
+        sleep(distance_cm / (speed / 10))  # Simplified time calculation
+        holonomic.motorstop()
+    def slide_left_distance(distance_cm, speed): 
+        holonomic.slide_left(speed)
+        sleep(distance_cm / (speed / 10))  # Simplified time calculation
+        holonomic.motorstop()
     
-    def stop():
-        holonomic.drive(0, 0, 0)
         
         
-class Auto_backend:
-    def __init__(self, r=0.03, L=0.14, W=0.20): #Units in meters
-        self.r = r
-        self.L = L
-        self.W = W
-
-    def update(self):
-        rpm_to_rad = 2 * math.pi / 60
-
-        W1 = holonomic.left_front.get_value("speed") * rpm_to_rad
-        W2 = holonomic.right_front.get_value("speed") * rpm_to_rad
-        W3 = holonomic.left_back.get_value("speed") * rpm_to_rad
-        W4 = holonomic.right_back.get_value("speed") * rpm_to_rad
-
-        self.vx = (self.r / 4) * (W1 + W2 + W3 + W4)   # m/s
-        self.vy = (self.r / 4) * (-W1 + W2 + W3 - W4)  # m/s
-        self.wL = (self.r / (4 * (self.L + self.W))) * (-W1 + W2 - W3 + W4)  # rad/s
-
-        return self.vx, self.vy, self.wL
-
-    def move_forward(self, distance, power):
-        holonomic.move_forward(power)
-        target_x = self.vx * novapi.timer() + distance
-        while abs(target_x - self.vx * novapi.timer()) > 0.01:
-            novapi.delay(10)
-        holonomic.stop()
-        
-   
 class dc_motor:
     # Default DC port
     dc_port = "DC1"
@@ -223,7 +213,7 @@ gripper = dc_motor("DC7")
 bl_2 = brushless_motor("BL1")
 #shooting angle
 angle_right = smartservo_class("M1", "INDEX1")
-angle_left = smartservo_class("M1", "INDEX2") # only for angles
+angle_left = smartservo_class("M1", "INDEX2")
 #utility
 left_block = dc_motor("DC4")
 right_block = dc_motor("DC5")
@@ -247,7 +237,7 @@ class runtime:
         elif abs(gamepad.get_joystick("Lx")) < -20:
             holonomic.slide_right(-gamepad.get_joystick("Lx"))
         else :
-            holonomic.stop()
+            holonomic.motorstop()
 
     def change_mode():
         if novapi.timer() > 0.9:
@@ -301,12 +291,13 @@ class runtime:
             lift.set_speed(0)
         
         if gamepad.is_key_pressed("N1"):
-            gripper.on(60, True)
-        elif gamepad.is_key_pressed("N4"):
             gripper.on(60, False)
-        else:
+            sleep(0.3)
+            gripper.on(20, False)
+        elif gamepad.is_key_pressed("N4"):
+            gripper.on(60, True)
+            sleep(0.2)
             gripper.off()
-            
         if gamepad.is_key_pressed("R1"):
             left_block.on(100, True)
             right_block.on(100, False)
@@ -319,13 +310,24 @@ class runtime:
 
 class Auto:
     def run():
-        Auto_backend.move_forward(0.5, 200)
-        return holonomic.motorstop()
+        angle_left.move_to(-36, 20)
+        angle_right.move_to(-36, 20)
+        left_block.on(100, True)
+        right_block.on(100, False)
+        auto_backend.move_forward_distance(9, 100)
+        auto_backend.slide_left_distance(9, 100)
+        auto_backend.move_forward_distance(7, 100)
+        sleep(0.9)
+        auto_backend.move_backward_distance(4, 100)
+        auto_backend.turn_left_angle(10, 100)
+        left_block.on(100, False)
+        right_block.on(100, True)
+        sleep(1000000000)
 
 
 while True:
     if power_manage_module.is_auto_mode():
-        status.show("A", wait=False)
+        status.show("Auto", wait=False)
         Auto.run()
     else:
         runtime.move()
@@ -333,9 +335,9 @@ while True:
             runtime.change_mode()
         else:
             if runtime.CTRL_MODE == 0:
-                status.show("S", wait=False)
+                status.show("Shoot", wait=False)
                 runtime.shoot_peem()
             else:
-                status.show("G", wait=False)
+                status.show("Gripper", wait=False)
                 runtime.gripper_peem()
         
