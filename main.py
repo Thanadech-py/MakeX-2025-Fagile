@@ -292,11 +292,9 @@ class runtime:
         
         if gamepad.is_key_pressed("N1"):
             gripper.on(60, False)
-            sleep(0.3)
-            gripper.on(20, False)
         elif gamepad.is_key_pressed("N4"):
             gripper.on(60, True)
-            sleep(0.2)
+        else:
             gripper.off()
         if gamepad.is_key_pressed("R1"):
             left_block.on(100, True)
