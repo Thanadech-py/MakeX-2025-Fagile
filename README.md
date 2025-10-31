@@ -17,7 +17,7 @@ Our robot is designed for the MakeX 2025 competition, featuring advanced mecanum
 
 ## Technical Specifications
 - **Drive System**: Mecanum wheels with 4-wheel drive
-- **Control System**: Advanced PID for each wheels
+- **Control System**: Advanced PID
 - **Power System**: [12V 4200mah Battery]
 - **Sensors**: [Encoder, IMU]
 - **Programming Language**: MicroPython
